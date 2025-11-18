@@ -55,7 +55,7 @@ export default function Home() {
           }}
         >
           {/* Title */}
-          <h1 className="text-4xl font-semibold mb-4 text-center">UseTools</h1>
+          <h1 className="text-4xl font-semibold mb-4 text-center">UseTiny</h1>
 
           {/* Command with Input - always visible */}
           <Command className="rounded-lg border shadow-md relative z-50">

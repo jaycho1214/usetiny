@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNotepadStore } from "../store";
 
 export function useKeyboardShortcuts(
-  textareaRef: React.RefObject<HTMLTextAreaElement | null>
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>,
 ) {
   const createTab = useNotepadStore((state) => state.createTab);
   const setActiveTab = useNotepadStore((state) => state.setActiveTab);
@@ -36,7 +36,7 @@ export function useKeyboardShortcuts(
         textareaRef.current?.focus();
       }
     },
-    [createTab, setActiveTab, textareaRef]
+    [createTab, setActiveTab, textareaRef],
   );
 
   useEffect(() => {

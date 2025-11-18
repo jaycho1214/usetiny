@@ -1,4 +1,4 @@
-# UseTools
+# UseTiny
 
 A collection of lightweight productivity tools.
 

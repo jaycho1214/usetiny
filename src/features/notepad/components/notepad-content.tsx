@@ -54,7 +54,7 @@ export default function NotepadContent() {
           href="/"
           className="text-sm font-semibold hover:opacity-70 transition-opacity"
         >
-          UseTools
+          UseTiny
         </Link>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -83,7 +83,7 @@ export default function NotepadContent() {
                 "h-7 px-2 gap-1.5 relative inline-flex items-center rounded-md text-sm font-medium transition-colors cursor-pointer",
                 tab.id === activeTabId
                   ? "bg-secondary text-secondary-foreground"
-                  : "hover:bg-accent hover:text-accent-foreground"
+                  : "hover:bg-accent hover:text-accent-foreground",
               )}
               onClick={() => setActiveTab(tab.id)}
             >

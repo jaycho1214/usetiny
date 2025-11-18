@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "UseTools", template: "%s | UseTools" },
+  title: { default: "UseTiny", template: "%s | UseTiny" },
   description: "A collection of useful mini tools",
 };
 
