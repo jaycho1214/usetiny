@@ -1,0 +1,62 @@
+[
+  {
+    "event_name": "tool_selected",
+    "description": "User selected a tool from the command palette on the home page",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/app/page.tsx"
+  },
+  {
+    "event_name": "command_palette_opened",
+    "description": "User opened the command palette using the search input or keyboard shortcut",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/app/page.tsx"
+  },
+  {
+    "event_name": "notepad_tab_created",
+    "description": "User created a new notepad tab",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/store.ts"
+  },
+  {
+    "event_name": "notepad_tab_deleted",
+    "description": "User deleted a notepad tab",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/store.ts"
+  },
+  {
+    "event_name": "notepad_tab_switched",
+    "description": "User switched to a different notepad tab",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/components/notepad-content.tsx"
+  },
+  {
+    "event_name": "notepad_content_edited",
+    "description": "User edited content in a notepad tab",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/components/notepad-content.tsx"
+  },
+  {
+    "event_name": "notepad_tab_renamed",
+    "description": "User renamed a notepad tab",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/components/notepad-content.tsx"
+  },
+  {
+    "event_name": "theme_changed",
+    "description": "User changed the theme (light, dark, or system)",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/components/theme-toggle.tsx"
+  },
+  {
+    "event_name": "keyboard_shortcut_used",
+    "description": "User used a keyboard shortcut (tab creation, tab switching, focus)",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/components/keyboard-shortcuts.tsx"
+  },
+  {
+    "event_name": "notepad_tab_limit_reached",
+    "description": "User attempted to create more than 50 tabs and was prevented",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/store.ts"
+  },
+  {
+    "event_name": "notepad_content_limit_reached",
+    "description": "User attempted to add content exceeding 1MB limit",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/features/notepad/components/notepad-content.tsx"
+  },
+  {
+    "event_name": "notepad_viewed",
+    "description": "User navigated to the notepad tool page (conversion funnel top)",
+    "file_path": "/Users/jay/Codes/jaycho1214/minitools/src/app/notepad/page.tsx"
+  }
+]
