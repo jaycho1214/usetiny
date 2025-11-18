@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "MiniTools",
-    short_name: "MiniTools",
-    description: "A collection of useful mini tools",
+    name: "UseTools",
+    short_name: "UseTools",
+    description: "A collection of lightweight productivity tools.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",

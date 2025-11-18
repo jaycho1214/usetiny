@@ -4,7 +4,7 @@ import { FullscreenLoading } from "@/components/fullscreen-loading";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Notepad | MiniTools",
+  title: "Notepad",
   description: "Simple notepad with tabs and keyboard shortcuts",
 };
 

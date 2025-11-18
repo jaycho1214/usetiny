@@ -54,7 +54,7 @@ export default function NotepadContent() {
           href="/"
           className="text-sm font-semibold hover:opacity-70 transition-opacity"
         >
-          MiniTools
+          UseTools
         </Link>
         <Tooltip>
           <TooltipTrigger asChild>
