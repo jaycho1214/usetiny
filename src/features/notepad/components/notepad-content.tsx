@@ -154,6 +154,19 @@ export default function NotepadContent() {
         />
       )}
 
+      {/* Status bar */}
+      {activeTab && (
+        <div className="bg-background px-4 py-1.5 text-xs text-muted-foreground flex justify-end gap-3 border-t">
+          <span>
+            {activeTab.content.trim()
+              ? activeTab.content.trim().split(/\s+/).length
+              : 0}{" "}
+            words
+          </span>
+          <span>{activeTab.content.length} characters</span>
+        </div>
+      )}
+
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
