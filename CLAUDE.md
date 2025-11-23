@@ -41,21 +41,25 @@ src/
 ### Key Architectural Patterns
 
 **Feature-Based Organization**: Each tool (e.g., notepad) is organized in `src/features/[tool]/` with:
+
 - `store.ts`: Zustand store with persistence
 - `components/`: Feature-specific components
 
 **State Management with Zustand**:
+
 - Uses Zustand with `persist` middleware for localStorage persistence
 - `skipHydration: true` requires manual hydration via `useStoreHydration` hook
 - Stores use versioning (`version: 1`) for migration support
 - Example pattern in `src/features/notepad/store.ts:39-129`
 
 **Hydration Pattern**:
+
 - Client-side stores must use `useStoreHydration` hook (see `src/hooks/use-store-hydration.tsx`)
 - This prevents hydration mismatches between server and client
 - Pattern: Show loading state until `hydrated === true`
 
 **PostHog Analytics**:
+
 - Initialized in `instrumentation-client.ts` (production only)
 - Uses proxy rewrites in `next.config.ts` (`/relay-aqZo/*` → PostHog)
 - Requires `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` in `.env`
@@ -63,17 +67,20 @@ src/
 ### Tech Stack Details
 
 **UI Framework**:
+
 - shadcn/ui (new-york style) with Radix UI primitives
 - Components in `src/components/ui/` are generated - use `npx shadcn@latest add [component]`
 - Theme system via `next-themes` with system preference support
 - Lucide React for icons
 
 **Styling**:
+
 - Tailwind CSS 4 with CSS variables for theming
 - Global styles in `src/app/globals.css`
 - Utility function `cn()` in `src/lib/utils.ts` for class merging
 
 **Data Persistence**:
+
 - Zustand stores with `persist` middleware use localStorage
 - Tab limit enforced (50 tabs max in notepad to prevent localStorage exhaustion)
 
