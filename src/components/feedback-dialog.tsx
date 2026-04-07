@@ -82,7 +82,7 @@ export function FeedbackDialog() {
         setEmail("");
         setFeedback("");
         setOpen(false);
-      } catch (error) {
+      } catch {
         toast.error("Failed to submit feedback. Please try again.");
       } finally {
         setIsSubmitting(false);
@@ -123,7 +123,7 @@ export function FeedbackDialog() {
           <DialogHeader>
             <DialogTitle>Send Feedback</DialogTitle>
             <DialogDescription>
-              We'd love to hear your thoughts. Let us know how we can improve!
+              We&apos;d love to hear your thoughts. Let us know how we can improve!
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">

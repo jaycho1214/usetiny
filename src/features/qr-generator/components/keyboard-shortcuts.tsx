@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { type QRType } from "../utils";
 
 const qrTypeOrder: QRType[] = [
@@ -88,24 +88,4 @@ export function useKeyboardShortcuts(
   }, [handleKeyDown]);
 }
 
-interface NavigatorWithUserAgentData {
-  userAgentData?: {
-    platform?: string;
-  };
-  platform?: string;
-}
-
-export function useIsMac() {
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    const nav = navigator as NavigatorWithUserAgentData;
-    if (nav.userAgentData?.platform) {
-      setIsMac(nav.userAgentData.platform.toLowerCase().includes("mac"));
-    } else if (nav.platform) {
-      setIsMac(nav.platform.toLowerCase().includes("mac"));
-    }
-  }, []);
-
-  return isMac;
-}
+export { useIsMac } from "@/hooks/use-is-mac";

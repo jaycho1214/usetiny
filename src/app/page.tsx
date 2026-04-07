@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { NotepadText, QrCode } from "lucide-react";
+import { FileText, NotepadText, QrCode } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -100,6 +100,13 @@ export default function Home() {
                   >
                     <QrCode />
                     <span>QR Generator</span>
+                  </CommandItem>
+                  <CommandItem
+                    keywords={["pdf", "editor", "annotate", "draw", "sign"]}
+                    onSelect={() => router.push("/pdf-editor")}
+                  >
+                    <FileText />
+                    <span>PDF Editor</span>
                   </CommandItem>
                 </CommandGroup>
               </CommandList>

@@ -85,7 +85,8 @@ export const useNotepadStore = create<NotepadStore>()(
           return;
         }
 
-        const { [id]: removed, ...remainingTabs } = state.tabs;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [id]: _removed, ...remainingTabs } = state.tabs;
         const remainingIds = Object.keys(remainingTabs);
 
         // Set new active tab if we're deleting the active one

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useNotepadStore } from "../store";
 
 export function useKeyboardShortcuts(
@@ -83,27 +83,4 @@ export function useKeyboardShortcuts(
   }, [handleKeyDown]);
 }
 
-interface NavigatorWithUserAgentData {
-  userAgentData?: {
-    platform?: string;
-  };
-  platform?: string;
-}
-
-export function useIsMac() {
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    // Try modern API first, fallback to deprecated platform
-    const nav = navigator as NavigatorWithUserAgentData;
-    if (nav.userAgentData?.platform) {
-      setIsMac(nav.userAgentData.platform.toLowerCase().includes("mac"));
-    } else if (nav.platform) {
-      // Fallback to deprecated platform API for older browsers
-      setIsMac(nav.platform.toLowerCase().includes("mac"));
-    }
-  }, []);
-
-  // Return false until mounted to match SSR
-  return isMac;
-}
+export { useIsMac } from "@/hooks/use-is-mac";

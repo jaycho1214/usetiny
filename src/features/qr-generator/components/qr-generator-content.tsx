@@ -50,14 +50,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import NextLink from "next/link";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "sonner";
@@ -380,18 +373,14 @@ export default function QRGeneratorContent() {
   return (
     <div className="h-dvh flex flex-col">
       {/* Navbar */}
-      <div className="bg-background px-4 py-2 flex items-center gap-2 border-b">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">UseTiny</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>QR Generator</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      <div className="bg-background px-4 py-2 flex items-center gap-2">
+        <NextLink
+          href="/"
+          className="text-sm font-semibold hover:opacity-70 transition-opacity"
+        >
+          UseTiny
+        </NextLink>
+        <span className="text-sm text-muted-foreground">QR Generator</span>
         <div className="flex-1" />
         <Tooltip>
           <TooltipTrigger asChild>
