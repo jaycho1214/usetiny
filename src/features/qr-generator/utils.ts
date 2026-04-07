@@ -1,11 +1,14 @@
-export type QRType =
-  | "text"
-  | "url"
-  | "wifi"
-  | "email"
-  | "phone"
-  | "sms"
-  | "bitcoin";
+export const qrTypes = [
+  "text",
+  "url",
+  "wifi",
+  "email",
+  "phone",
+  "sms",
+  "bitcoin",
+] as const;
+
+export type QRType = (typeof qrTypes)[number];
 
 export interface WiFiData {
   ssid: string;

@@ -65,8 +65,12 @@ const qrTypes: { value: QRType; label: string; icon: React.ReactNode }[] = [
   { value: "bitcoin", label: "Bitcoin", icon: <Bitcoin className="h-4 w-4" /> },
 ];
 
-export default function QRGeneratorContent() {
-  const [qrType, setQRType] = useState<QRType>("text");
+export default function QRGeneratorContent({
+  initialType = "text",
+}: {
+  initialType?: QRType;
+}) {
+  const [qrType, setQRType] = useState<QRType>(initialType);
   const [textValue, setTextValue] = useState("");
   const [wifiData, setWifiData] = useState<WiFiData>(defaultWifiData);
   const [emailData, setEmailData] = useState<EmailData>(defaultEmailData);

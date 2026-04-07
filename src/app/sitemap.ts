@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { allTools } from "@/lib/tools";
+import { qrTypes } from "@/features/qr-generator/utils";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://usetiny.app";
@@ -17,5 +18,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.9,
     })),
+    ...qrTypes
+      .filter((t) => t !== "text")
+      .map((type) => ({
+        url: `${baseUrl}/qr/${type}`,
+        lastModified: new Date(),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })),
   ];
 }
