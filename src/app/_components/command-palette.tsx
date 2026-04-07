@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import { FileText, NotepadText, QrCode } from "lucide-react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,27 +10,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { useRouter } from "next/navigation";
-
-const tools = [
-  {
-    name: "Notepad",
-    description: "Distraction-free text editor with tabs",
-    icon: NotepadText,
-    href: "/notepad",
-  },
-  {
-    name: "QR Generator",
-    description: "Create and download QR codes instantly",
-    icon: QrCode,
-    href: "/qr",
-  },
-  {
-    name: "PDF Editor",
-    description: "Annotate, fill forms, and manage pages",
-    icon: FileText,
-    href: "/pdf-editor",
-  },
-];
+import { allTools } from "@/lib/tools";
 
 export function CommandPalette() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -78,7 +57,7 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>No tools found.</CommandEmpty>
         <CommandGroup>
-          {tools.map((tool) => (
+          {allTools.map((tool) => (
             <CommandItem
               key={tool.href}
               keywords={tool.description.toLowerCase().split(/\s+/)}

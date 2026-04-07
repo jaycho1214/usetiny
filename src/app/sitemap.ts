@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { allTools } from "@/lib/tools";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://usetiny.app";
@@ -10,23 +11,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1.0,
     },
-    {
-      url: `${baseUrl}/notepad`,
+    ...allTools.map((tool) => ({
+      url: `${baseUrl}${tool.href}`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: "monthly" as const,
       priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/qr`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/pdf-editor`,
-      lastModified: new Date(),
-      changeFrequency: "monthly",
-      priority: 0.9,
-    },
+    })),
   ];
 }

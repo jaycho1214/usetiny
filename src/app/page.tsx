@@ -1,35 +1,14 @@
-import { FileText, NotepadText, QrCode, ArrowRight, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import { Kbd } from "@/components/ui/kbd";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FeedbackDialog } from "@/components/feedback-dialog";
 import { CommandPalette } from "./_components/command-palette";
-import Link from "next/link";
+import { ToolList } from "./_components/tool-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
-
-const tools = [
-  {
-    name: "Notepad",
-    description: "Distraction-free text editor with tabs",
-    icon: NotepadText,
-    href: "/notepad",
-  },
-  {
-    name: "QR Generator",
-    description: "Create and download QR codes instantly",
-    icon: QrCode,
-    href: "/qr",
-  },
-  {
-    name: "PDF Editor",
-    description: "Annotate, fill forms, and manage pages",
-    icon: FileText,
-    href: "/pdf-editor",
-  },
-];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -90,29 +69,9 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Tools */}
+          {/* Tools — shows 3 most recently used, or random 3 */}
           <nav aria-label="Tools">
-            <ul className="space-y-1">
-              {tools.map((tool) => (
-                <li key={tool.href}>
-                  <Link
-                    href={tool.href}
-                    className="group flex items-center gap-4 rounded-xl px-4 py-3.5 -mx-4 transition-all duration-150 hover:bg-accent active:scale-[0.98]"
-                  >
-                    <div className="flex items-center justify-center size-10 rounded-lg bg-muted/60 group-hover:bg-muted transition-colors duration-150">
-                      <tool.icon className="size-[18px] text-muted-foreground group-hover:text-foreground transition-colors duration-150" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-sm font-medium">{tool.name}</span>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {tool.description}
-                      </p>
-                    </div>
-                    <ArrowRight className="size-4 opacity-0 group-hover:opacity-60 transition-all duration-150 group-hover:translate-x-0.5" />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <ToolList />
           </nav>
 
           {/* Keyboard hint */}
