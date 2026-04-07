@@ -123,8 +123,32 @@ Use these import aliases (configured in `tsconfig.json` and `components.json`):
 - **Canonical URLs**: Every page must set `alternates: { canonical: "/path" }`.
 - **JSON-LD structured data**: Each tool page includes a `<script type="application/ld+json">` with `WebApplication` schema (`applicationCategory: "UtilityApplication"`, `offers.price: "0"`). The homepage uses `WebSite` schema.
 - **Server components for SEO**: The homepage (`page.tsx`) is a server component so that all tool listings, descriptions, and links are in the initial HTML. Client interactivity (command palette) is extracted to a separate `"use client"` component.
-- **New tool pages**: When adding a new tool, ensure:
-  1. Add the route to `sitemap.ts`
-  2. Export `metadata` with `title`, `description`, `keywords`, and `alternates.canonical`
-  3. Add `WebApplication` JSON-LD with `price: "0"` and relevant `featureList`
-  4. Add the tool to the homepage tool list (both in `page.tsx` and `_components/command-palette.tsx`)
+### OpenGraph Images
+
+Each route has an `opengraph-image.tsx` that generates a 1200×630 PNG via Next.js `ImageResponse` (Satori renderer). Preview by visiting `/<route>/opengraph-image` in the browser.
+
+**Design rules** (from `.impeccable.md` — fast, minimal, quiet, monochrome):
+
+- Dark background (`#0a0a0b`), white text (`#fafafa`), muted gray for descriptions (`#71717a`) and brand URL (`#3f3f46`)
+- Tool name is the dominant element — large (96-120px), weight 800, tight letter-spacing (`-0.05em`)
+- No decorative elements: no lines, borders, badges, icons, or gradients
+- Each image has a **distinct composition** — vary layout per page (centered, bottom-left, center-left, right-aligned). Do NOT use the same template for every image.
+- Description is one short sentence. Brand URL (`usetiny.app`) is small and placed opposite the main text.
+- `system-ui, sans-serif` font only (Satori limitation)
+
+**Satori constraints** — the renderer does NOT support:
+
+- CSS Grid (flexbox only)
+- `<br />` inside elements (causes "Expected div to have explicit display: flex" error — use single text strings instead)
+- SVG filters, blur, backdrop-filter
+- Custom web fonts without explicit font data loading
+
+### New Tool Checklist
+
+When adding a new tool, complete all of the following:
+
+1. Add the route to `sitemap.ts`
+2. Export `metadata` with `title`, `description`, `keywords`, and `alternates.canonical`
+3. Add `WebApplication` JSON-LD with `price: "0"` and relevant `featureList`
+4. Add the tool to the homepage tool list (both in `page.tsx` and `_components/command-palette.tsx`)
+5. Create `opengraph-image.tsx` in the route directory following the design rules above — use a composition that differs from existing tool images
