@@ -21,12 +21,12 @@ const jsonLd = {
 
 export default function Home() {
   return (
-    <div className="min-h-dvh flex flex-col">
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
+      <div className="min-h-dvh flex flex-col">
       <header className="flex items-center justify-end gap-2 p-4">
         <a
           href="https://buymeacoffee.com/jaycho1214"
@@ -84,5 +84,6 @@ export default function Home() {
       {/* Command palette (client component) */}
       <CommandPalette />
     </div>
+    </>
   );
 }

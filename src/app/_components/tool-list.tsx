@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { allTools } from "@/lib/tools";
 import { getRecentOrder } from "@/lib/recent-tools";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function subscribe(cb: () => void) {
   window.addEventListener("storage", cb);
@@ -16,33 +17,42 @@ function getSnapshot() {
 }
 
 function getServerSnapshot() {
-  return "";
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
+  // Return a sentinel so we can show skeleton during SSR/hydration
+  return "__ssr__";
 }
 
 export function ToolList() {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const tools = useMemo(() => {
+    if (raw === "__ssr__") return null;
+
     const recent = getRecentOrder();
     if (recent.length === 0) {
-      return shuffle(allTools).slice(0, 3);
+      return allTools.slice(0, 3);
     }
     const recentTools = recent
       .map((href) => allTools.find((t) => t.href === href))
       .filter(Boolean) as typeof allTools;
     const rest = allTools.filter((t) => !recent.includes(t.href));
     return [...recentTools, ...rest].slice(0, 3);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [raw]);
+
+  if (!tools) {
+    return (
+      <ul className="space-y-1">
+        {[0, 1, 2].map((i) => (
+          <li key={i} className="flex items-center gap-4 px-4 py-3.5 -mx-4">
+            <Skeleton className="size-10 rounded-lg" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   return (
     <ul className="space-y-1">
