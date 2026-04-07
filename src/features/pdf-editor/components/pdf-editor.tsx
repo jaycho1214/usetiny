@@ -132,11 +132,15 @@ export function PDFEditor() {
         for (const a of anns) {
           if (a.subtype !== "Widget") continue;
           const [llx, lly, urx, ury] = a.rect;
-          const w = urx - llx, h = ury - lly;
+          const w = urx - llx,
+            h = ury - lly;
           if (w <= 0 || h <= 0) continue;
-          const ft = a.fieldType === "Btn" ? "checkbox"
-            : a.fieldType === "Ch" ? "dropdown"
-            : "text";
+          const ft =
+            a.fieldType === "Btn"
+              ? "checkbox"
+              : a.fieldType === "Ch"
+                ? "dropdown"
+                : "text";
           imported.push({
             id: nanoid(),
             type: "form",
@@ -152,19 +156,27 @@ export function PDFEditor() {
       }
       // Batch-set all annotations at once (avoids N individual store updates)
       if (imported.length > 0) {
-        usePDFEditorStore.setState({ annotations: imported, hasUnsavedChanges: false });
+        usePDFEditorStore.setState({
+          annotations: imported,
+          hasUnsavedChanges: false,
+        });
       }
     })();
   }, [pdfDoc]);
 
   // Load current page proxy
   useEffect(() => {
-    if (!pdfDoc) { setPageProxy(null); return; }
+    if (!pdfDoc) {
+      setPageProxy(null);
+      return;
+    }
     let cancelled = false;
     pdfDoc.getPage(currentPage + 1).then((page) => {
       if (!cancelled) setPageProxy(page);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [pdfDoc, currentPage]);
 
   // Native zoom (Ctrl/Cmd + scroll / trackpad pinch)
@@ -188,79 +200,208 @@ export function PDFEditor() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
-      const isInput = target.tagName === "TEXTAREA" || target.tagName === "INPUT";
+      const isInput =
+        target.tagName === "TEXTAREA" || target.tagName === "INPUT";
       const mod = e.metaKey || e.ctrlKey;
 
-      if (mod && e.key === "z" && !e.shiftKey) { e.preventDefault(); undo(); return; }
-      if (mod && e.key === "z" && e.shiftKey) { e.preventDefault(); redo(); return; }
-      if (mod && (e.key === "s" || e.key === "S")) { e.preventDefault(); handleExportRef.current(); return; }
+      if (mod && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+      if (mod && e.key === "z" && e.shiftKey) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      if (mod && (e.key === "s" || e.key === "S")) {
+        e.preventDefault();
+        handleExportRef.current();
+        return;
+      }
       // Bold/Italic toggle on selected text annotation
       if (mod && e.key === "b" && selectedId) {
-        const ann = usePDFEditorStore.getState().annotations.find((a) => a.id === selectedId);
-        if (ann?.type === "text") { e.preventDefault(); usePDFEditorStore.getState().updateAnnotation(selectedId, { bold: !ann.bold }); return; }
+        const ann = usePDFEditorStore
+          .getState()
+          .annotations.find((a) => a.id === selectedId);
+        if (ann?.type === "text") {
+          e.preventDefault();
+          usePDFEditorStore
+            .getState()
+            .updateAnnotation(selectedId, { bold: !ann.bold });
+          return;
+        }
       }
       if (mod && e.key === "i" && selectedId) {
-        const ann = usePDFEditorStore.getState().annotations.find((a) => a.id === selectedId);
-        if (ann?.type === "text") { e.preventDefault(); usePDFEditorStore.getState().updateAnnotation(selectedId, { italic: !ann.italic }); return; }
+        const ann = usePDFEditorStore
+          .getState()
+          .annotations.find((a) => a.id === selectedId);
+        if (ann?.type === "text") {
+          e.preventDefault();
+          usePDFEditorStore
+            .getState()
+            .updateAnnotation(selectedId, { italic: !ann.italic });
+          return;
+        }
       }
       if (mod && (e.key === "c" || e.key === "C") && !e.shiftKey) {
         e.preventDefault();
-        if (selectedId) { copySelected(); }
-        else if (pdfData) { copiedPageRef.current = currentPage; toast.success(`Page ${currentPage + 1} copied`); }
+        if (selectedId) {
+          copySelected();
+        } else if (pdfData) {
+          copiedPageRef.current = currentPage;
+          toast.success(`Page ${currentPage + 1} copied`);
+        }
         return;
       }
       if (mod && (e.key === "v" || e.key === "V") && !e.shiftKey) {
         e.preventDefault();
-        if (selectedId || copiedPageRef.current === null) { pasteClipboard(); }
-        else if (pdfData && copiedPageRef.current !== null) {
-          duplicatePage(pdfData, copiedPageRef.current).then((r) => { applyPageOp(r.data, r.totalPages, r.updateAnnotations); toast.success("Page pasted"); });
+        if (selectedId || copiedPageRef.current === null) {
+          pasteClipboard();
+        } else if (pdfData && copiedPageRef.current !== null) {
+          duplicatePage(pdfData, copiedPageRef.current).then((r) => {
+            applyPageOp(r.data, r.totalPages, r.updateAnnotations);
+            toast.success("Page pasted");
+          });
         }
         return;
       }
-      if (mod && (e.key === "x" || e.key === "X")) { if (selectedId) { e.preventDefault(); copySelected(); removeAnnotation(selectedId); } return; }
-      if (mod && (e.key === "d" || e.key === "D")) { if (selectedId) { e.preventDefault(); duplicateSelected(); } return; }
+      if (mod && (e.key === "x" || e.key === "X")) {
+        if (selectedId) {
+          e.preventDefault();
+          copySelected();
+          removeAnnotation(selectedId);
+        }
+        return;
+      }
+      if (mod && (e.key === "d" || e.key === "D")) {
+        if (selectedId) {
+          e.preventDefault();
+          duplicateSelected();
+        }
+        return;
+      }
 
       if (isInput) return;
 
       switch (e.key) {
-        case "v": case "V": setActiveTool("select"); break;
-        case "t": case "T": setActiveTool("text"); break;
-        case "d": case "D": setActiveTool("draw"); break;
-        case "h": case "H": setActiveTool("highlight"); break;
-        case "f": case "F": setActiveTool("form"); break;
-        case "g": case "G": setActiveTool("fill"); break;
-        case "e": case "E": setActiveTool("eraser"); break;
-        case "Delete": case "Backspace":
-          if (selectedId) { e.preventDefault(); removeAnnotation(selectedId); }
-          else if (pdfData && totalPages > 1) {
+        case "v":
+        case "V":
+          setActiveTool("select");
+          break;
+        case "t":
+        case "T":
+          setActiveTool("text");
+          break;
+        case "d":
+        case "D":
+          setActiveTool("draw");
+          break;
+        case "h":
+        case "H":
+          setActiveTool("highlight");
+          break;
+        case "f":
+        case "F":
+          setActiveTool("form");
+          break;
+        case "g":
+        case "G":
+          setActiveTool("fill");
+          break;
+        case "e":
+        case "E":
+          setActiveTool("eraser");
+          break;
+        case "Delete":
+        case "Backspace":
+          if (selectedId) {
             e.preventDefault();
-            deletePage(pdfData, currentPage).then((r) => { applyPageOp(r.data, r.totalPages, r.updateAnnotations); toast.success("Page deleted"); });
+            removeAnnotation(selectedId);
+          } else if (pdfData && totalPages > 1) {
+            e.preventDefault();
+            deletePage(pdfData, currentPage).then((r) => {
+              applyPageOp(r.data, r.totalPages, r.updateAnnotations);
+              toast.success("Page deleted");
+            });
           }
           break;
-        case "Escape": usePDFEditorStore.getState().setSelectedAnnotationId(null); break;
+        case "Escape":
+          usePDFEditorStore.getState().setSelectedAnnotationId(null);
+          break;
         case "ArrowLeft":
-          if (selectedId) { e.preventDefault(); moveAnnotation(selectedId, e.shiftKey ? -0.01 : -0.002, 0); }
-          else if (currentPage > 0) { e.preventDefault(); setCurrentPage(currentPage - 1); }
+          if (selectedId) {
+            e.preventDefault();
+            moveAnnotation(selectedId, e.shiftKey ? -0.01 : -0.002, 0);
+          } else if (currentPage > 0) {
+            e.preventDefault();
+            setCurrentPage(currentPage - 1);
+          }
           break;
         case "ArrowRight":
-          if (selectedId) { e.preventDefault(); moveAnnotation(selectedId, e.shiftKey ? 0.01 : 0.002, 0); }
-          else if (currentPage < totalPages - 1) { e.preventDefault(); setCurrentPage(currentPage + 1); }
+          if (selectedId) {
+            e.preventDefault();
+            moveAnnotation(selectedId, e.shiftKey ? 0.01 : 0.002, 0);
+          } else if (currentPage < totalPages - 1) {
+            e.preventDefault();
+            setCurrentPage(currentPage + 1);
+          }
           break;
         case "ArrowUp":
-          if (selectedId) { e.preventDefault(); moveAnnotation(selectedId, 0, e.shiftKey ? -0.01 : -0.002); }
+          if (selectedId) {
+            e.preventDefault();
+            moveAnnotation(selectedId, 0, e.shiftKey ? -0.01 : -0.002);
+          }
           break;
         case "ArrowDown":
-          if (selectedId) { e.preventDefault(); moveAnnotation(selectedId, 0, e.shiftKey ? 0.01 : 0.002); }
+          if (selectedId) {
+            e.preventDefault();
+            moveAnnotation(selectedId, 0, e.shiftKey ? 0.01 : 0.002);
+          }
           break;
-        case "=": case "+": if (mod) { e.preventDefault(); setZoom((z) => Math.min(3, z + 0.25)); } break;
-        case "-": if (mod) { e.preventDefault(); setZoom((z) => Math.max(0.25, z - 0.25)); } break;
-        case "0": if (mod) { e.preventDefault(); setZoom(1); } break;
-        case "?": setShowShortcuts(true); break;
+        case "=":
+        case "+":
+          if (mod) {
+            e.preventDefault();
+            setZoom((z) => Math.min(3, z + 0.25));
+          }
+          break;
+        case "-":
+          if (mod) {
+            e.preventDefault();
+            setZoom((z) => Math.max(0.25, z - 0.25));
+          }
+          break;
+        case "0":
+          if (mod) {
+            e.preventDefault();
+            setZoom(1);
+          }
+          break;
+        case "?":
+          setShowShortcuts(true);
+          break;
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [selectedId, currentPage, totalPages, pdfData, setActiveTool, removeAnnotation, setCurrentPage, setZoom, undo, redo, copySelected, pasteClipboard, duplicateSelected, moveAnnotation, applyPageOp]);
+  }, [
+    selectedId,
+    currentPage,
+    totalPages,
+    pdfData,
+    setActiveTool,
+    removeAnnotation,
+    setCurrentPage,
+    setZoom,
+    undo,
+    redo,
+    copySelected,
+    pasteClipboard,
+    duplicateSelected,
+    moveAnnotation,
+    applyPageOp,
+  ]);
 
   const handleExport = useCallback(async () => {
     if (!pdfData) return;
@@ -287,7 +428,10 @@ export function PDFEditor() {
 
   const handleCloseFile = useCallback(() => {
     if (hasUnsavedChanges) setShowCloseConfirm(true);
-    else { reset(); clearPdfFromIDB(); }
+    else {
+      reset();
+      clearPdfFromIDB();
+    }
   }, [hasUnsavedChanges, reset]);
 
   const confirmClose = useCallback(() => {
@@ -305,10 +449,13 @@ export function PDFEditor() {
     setPageInput("");
   }, [pageInput, totalPages, setCurrentPage]);
 
-  const handleFileLoad = useCallback((data: ArrayBuffer, name: string) => {
-    importedForDoc.current = null;
-    setPdfData(data, name);
-  }, [setPdfData]);
+  const handleFileLoad = useCallback(
+    (data: ArrayBuffer, name: string) => {
+      importedForDoc.current = null;
+      setPdfData(data, name);
+    },
+    [setPdfData],
+  );
 
   if (!hydrated) return <FullscreenLoading />;
 
@@ -324,7 +471,12 @@ export function PDFEditor() {
 
   return (
     <div className="flex h-[calc(100dvh-1px)] flex-col bg-background">
-      <PDFToolbar onExport={handleExport} exporting={exporting} onShowShortcuts={() => setShowShortcuts(true)} onClose={handleCloseFile} />
+      <PDFToolbar
+        onExport={handleExport}
+        exporting={exporting}
+        onShowShortcuts={() => setShowShortcuts(true)}
+        onClose={handleCloseFile}
+      />
 
       <div className="flex min-h-0 flex-1">
         {pdfDoc && sidebarOpen && <PDFSidebar pdfDoc={pdfDoc} />}
@@ -334,18 +486,23 @@ export function PDFEditor() {
           style={{ touchAction: "none" }}
         >
           <div className="flex min-h-full min-w-fit items-start justify-center p-4 md:p-8">
-            {pageProxy && <PDFPageCanvas page={pageProxy} pageIndex={currentPage} />}
+            {pageProxy && (
+              <PDFPageCanvas page={pageProxy} pageIndex={currentPage} />
+            )}
           </div>
         </div>
       </div>
 
       {/* Status bar with zoom + page nav */}
-      <div className="flex items-center justify-between border-t bg-card px-2 py-1">
+      <div className="flex items-center justify-between border-t bg-background px-2 py-1">
         {/* Left: file info */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="hidden max-w-36 truncate sm:inline">{fileName}</span>
           {hasUnsavedChanges && (
-            <Badge variant="outline" className="h-4 border-yellow-500/50 px-1 text-[9px] text-yellow-600 dark:text-yellow-400">
+            <Badge
+              variant="outline"
+              className="h-4 border-yellow-500/50 px-1 text-[9px] text-yellow-600 dark:text-yellow-400"
+            >
               Unsaved
             </Badge>
           )}
@@ -358,7 +515,13 @@ export function PDFEditor() {
 
         {/* Center: page nav */}
         <div className="flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={currentPage === 0} onClick={() => setCurrentPage(currentPage - 1)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
             <ChevronLeft className="h-3.5 w-3.5" />
           </Button>
           {editingPage ? (
@@ -368,17 +531,32 @@ export function PDFEditor() {
               value={pageInput}
               onChange={(e) => setPageInput(e.target.value)}
               onBlur={handlePageSubmit}
-              onKeyDown={(e) => { if (e.key === "Enter") handlePageSubmit(); if (e.key === "Escape") { setEditingPage(false); setPageInput(""); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handlePageSubmit();
+                if (e.key === "Escape") {
+                  setEditingPage(false);
+                  setPageInput("");
+                }
+              }}
             />
           ) : (
             <button
               className="min-w-[3rem] rounded px-1 py-0.5 text-center text-xs tabular-nums text-muted-foreground hover:bg-accent"
-              onClick={() => { setEditingPage(true); setPageInput(String(currentPage + 1)); }}
+              onClick={() => {
+                setEditingPage(true);
+                setPageInput(String(currentPage + 1));
+              }}
             >
               {currentPage + 1} / {totalPages}
             </button>
           )}
-          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(currentPage + 1)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            disabled={currentPage >= totalPages - 1}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -392,18 +570,31 @@ export function PDFEditor() {
           )}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setZoom((z) => Math.max(0.25, z - 0.25))}
+              >
                 <Minus className="h-3 w-3" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Zoom out</TooltipContent>
           </Tooltip>
-          <button className="min-w-[2.5rem] rounded px-1 py-0.5 text-center text-[10px] tabular-nums text-muted-foreground hover:bg-accent" onClick={() => setZoom(1)}>
+          <button
+            className="min-w-[2.5rem] rounded px-1 py-0.5 text-center text-[10px] tabular-nums text-muted-foreground hover:bg-accent"
+            onClick={() => setZoom(1)}
+          >
             {Math.round(zoom * 100)}%
           </button>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setZoom((z) => Math.min(3, z + 0.25))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+              >
                 <Plus className="h-3 w-3" />
               </Button>
             </TooltipTrigger>
@@ -424,7 +615,10 @@ export function PDFEditor() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmClose} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={confirmClose}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Close without saving
             </AlertDialogAction>
           </AlertDialogFooter>

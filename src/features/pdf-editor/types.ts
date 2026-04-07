@@ -1,5 +1,17 @@
-export type Tool = "select" | "text" | "draw" | "highlight" | "form" | "fill" | "eraser";
-export type FormFieldType = "text" | "checkbox" | "dropdown" | "date" | "signature";
+export type Tool =
+  | "select"
+  | "text"
+  | "draw"
+  | "highlight"
+  | "form"
+  | "fill"
+  | "eraser";
+export type FormFieldType =
+  | "text"
+  | "checkbox"
+  | "dropdown"
+  | "date"
+  | "signature";
 
 export interface Point {
   x: number;

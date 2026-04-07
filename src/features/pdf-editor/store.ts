@@ -26,8 +26,16 @@ interface PDFEditorState {
   annotations: Annotation[];
   selectedAnnotationId: string | null;
   clipboard: Annotation | null;
-  _undoStack: { annotations: Annotation[]; pdfData: ArrayBuffer | null; totalPages: number }[];
-  _redoStack: { annotations: Annotation[]; pdfData: ArrayBuffer | null; totalPages: number }[];
+  _undoStack: {
+    annotations: Annotation[];
+    pdfData: ArrayBuffer | null;
+    totalPages: number;
+  }[];
+  _redoStack: {
+    annotations: Annotation[];
+    pdfData: ArrayBuffer | null;
+    totalPages: number;
+  }[];
 
   sidebarOpen: boolean;
   hasUnsavedChanges: boolean;
@@ -56,7 +64,11 @@ interface PDFEditorState {
   /** Move without pushing undo (use during live drag) */
   dragMove: (id: string, dx: number, dy: number) => void;
   /** Resize without pushing undo (use during live drag) */
-  dragResize: (id: string, pos: { x: number; y: number }, size: { width: number; height: number }) => void;
+  dragResize: (
+    id: string,
+    pos: { x: number; y: number },
+    size: { width: number; height: number },
+  ) => void;
   removeAnnotation: (id: string) => void;
   setSelectedAnnotationId: (id: string | null) => void;
   clearAnnotations: () => void;
@@ -68,11 +80,19 @@ interface PDFEditorState {
   redo: () => void;
   markSaved: () => void;
   /** Replace PDF data and adjust annotations for page operations */
-  applyPageOp: (newData: ArrayBuffer, newTotalPages: number, annotationUpdater: (anns: Annotation[]) => Annotation[]) => void;
+  applyPageOp: (
+    newData: ArrayBuffer,
+    newTotalPages: number,
+    annotationUpdater: (anns: Annotation[]) => Annotation[],
+  ) => void;
   reset: () => void;
 }
 
-type Snapshot = { annotations: Annotation[]; pdfData: ArrayBuffer | null; totalPages: number };
+type Snapshot = {
+  annotations: Annotation[];
+  pdfData: ArrayBuffer | null;
+  totalPages: number;
+};
 
 const initialState = {
   pdfData: null as ArrayBuffer | null,
@@ -103,8 +123,15 @@ const initialState = {
 function pushUndo(state: PDFEditorState) {
   // Share pdfData reference with previous snapshot if unchanged (saves memory)
   const prevSnap = state._undoStack[state._undoStack.length - 1];
-  const pdfRef = prevSnap && prevSnap.pdfData === state.pdfData ? prevSnap.pdfData : state.pdfData;
-  const snap: Snapshot = { annotations: state.annotations, pdfData: pdfRef, totalPages: state.totalPages };
+  const pdfRef =
+    prevSnap && prevSnap.pdfData === state.pdfData
+      ? prevSnap.pdfData
+      : state.pdfData;
+  const snap: Snapshot = {
+    annotations: state.annotations,
+    pdfData: pdfRef,
+    totalPages: state.totalPages,
+  };
   return {
     _undoStack: [...state._undoStack.slice(-MAX_UNDO), snap],
     _redoStack: [] as Snapshot[],
@@ -167,10 +194,16 @@ export const usePDFEditorStore = create<PDFEditorState>()(
           const next: Annotation[] = state.annotations.map((a) => {
             if (a.id !== id) return a;
             if (a.type === "draw") {
-              return { ...a, points: a.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) };
+              return {
+                ...a,
+                points: a.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
+              };
             }
             if ("position" in a) {
-              return { ...a, position: { x: a.position.x + dx, y: a.position.y + dy } } as Annotation;
+              return {
+                ...a,
+                position: { x: a.position.x + dx, y: a.position.y + dy },
+              } as Annotation;
             }
             return a;
           });
@@ -178,18 +211,31 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         }),
       beginDrag: () =>
         set((state) => {
-          const snap: Snapshot = { annotations: state.annotations, pdfData: state.pdfData, totalPages: state.totalPages };
-          return { _undoStack: [...state._undoStack.slice(-MAX_UNDO), snap], _redoStack: [] as Snapshot[] };
+          const snap: Snapshot = {
+            annotations: state.annotations,
+            pdfData: state.pdfData,
+            totalPages: state.totalPages,
+          };
+          return {
+            _undoStack: [...state._undoStack.slice(-MAX_UNDO), snap],
+            _redoStack: [] as Snapshot[],
+          };
         }),
       dragMove: (id, dx, dy) =>
         set((state) => ({
           annotations: state.annotations.map((a) => {
             if (a.id !== id) return a;
             if (a.type === "draw") {
-              return { ...a, points: a.points.map((p) => ({ x: p.x + dx, y: p.y + dy })) };
+              return {
+                ...a,
+                points: a.points.map((p) => ({ x: p.x + dx, y: p.y + dy })),
+              };
             }
             if ("position" in a) {
-              return { ...a, position: { x: a.position.x + dx, y: a.position.y + dy } } as Annotation;
+              return {
+                ...a,
+                position: { x: a.position.x + dx, y: a.position.y + dy },
+              } as Annotation;
             }
             return a;
           }),
@@ -198,7 +244,7 @@ export const usePDFEditorStore = create<PDFEditorState>()(
       dragResize: (id, pos, size) =>
         set((state) => ({
           annotations: state.annotations.map((a) =>
-            a.id === id ? ({ ...a, position: pos, size } as Annotation) : a
+            a.id === id ? ({ ...a, position: pos, size } as Annotation) : a,
           ),
           hasUnsavedChanges: true,
         })),
@@ -224,7 +270,7 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         const state = get();
         if (!state.selectedAnnotationId) return;
         const ann = state.annotations.find(
-          (a) => a.id === state.selectedAnnotationId
+          (a) => a.id === state.selectedAnnotationId,
         );
         if (ann) set({ clipboard: structuredClone(ann) });
       },
@@ -259,7 +305,7 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         const state = get();
         if (!state.selectedAnnotationId) return;
         const ann = state.annotations.find(
-          (a) => a.id === state.selectedAnnotationId
+          (a) => a.id === state.selectedAnnotationId,
         );
         if (ann) {
           set({ clipboard: structuredClone(ann) });
@@ -271,7 +317,11 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         set((state) => {
           if (state._undoStack.length === 0) return state;
           const prev = state._undoStack[state._undoStack.length - 1];
-          const current: Snapshot = { annotations: state.annotations, pdfData: state.pdfData, totalPages: state.totalPages };
+          const current: Snapshot = {
+            annotations: state.annotations,
+            pdfData: state.pdfData,
+            totalPages: state.totalPages,
+          };
           return {
             _undoStack: state._undoStack.slice(0, -1),
             _redoStack: [...state._redoStack, current],
@@ -287,7 +337,11 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         set((state) => {
           if (state._redoStack.length === 0) return state;
           const next = state._redoStack[state._redoStack.length - 1];
-          const current: Snapshot = { annotations: state.annotations, pdfData: state.pdfData, totalPages: state.totalPages };
+          const current: Snapshot = {
+            annotations: state.annotations,
+            pdfData: state.pdfData,
+            totalPages: state.totalPages,
+          };
           return {
             _redoStack: state._redoStack.slice(0, -1),
             _undoStack: [...state._undoStack, current],
@@ -338,6 +392,6 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         sidebarOpen: state.sidebarOpen,
         hasUnsavedChanges: state.hasUnsavedChanges,
       }),
-    }
-  )
+    },
+  ),
 );

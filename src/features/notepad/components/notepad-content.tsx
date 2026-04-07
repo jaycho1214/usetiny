@@ -5,7 +5,7 @@ import { useIsMac, useKeyboardShortcuts } from "./keyboard-shortcuts";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Keyboard, Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +17,7 @@ import { useStoreHydration } from "@/hooks/use-store-hydration";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { TabTitleInput } from "./tab-title-input";
+import { toast } from "sonner";
 
 export default function NotepadContent() {
   const {
@@ -25,6 +26,7 @@ export default function NotepadContent() {
     activeTabId,
     createTab,
     deleteTab,
+    restoreTab,
     updateTab,
     setActiveTab,
   } = useNotepadStore();
@@ -38,23 +40,42 @@ export default function NotepadContent() {
   useKeyboardShortcuts(textareaRef, titleInputRef);
   const rehydrated = useStoreHydration(useNotepadStore);
 
-  // Auto-delete empty tabs when switching
+  // Auto-delete untouched tabs when switching (only if title is still default AND content empty)
   useEffect(() => {
     const prevTabId = prevActiveTabIdRef.current;
     const currentTabId = activeTabId;
 
-    // If we switched tabs and there was a previous tab
     if (prevTabId && prevTabId !== currentTabId && tabs[prevTabId]) {
       const prevTab = tabs[prevTabId];
-      // Check if previous tab's content is empty (title doesn't matter)
-      if (prevTab.content.trim() === "") {
+      if (prevTab.content.trim() === "" && prevTab.title === "Untitled") {
         deleteTab(prevTabId);
       }
     }
 
-    // Update ref to current tab
     prevActiveTabIdRef.current = currentTabId;
   }, [activeTabId, tabs, deleteTab]);
+
+  const handleDeleteTab = useCallback(
+    (id: string) => {
+      const tab = tabs[id];
+      if (!tab) return;
+
+      // If the tab has content or a custom title, offer undo
+      const hasContent = tab.content.trim() !== "" || tab.title !== "Untitled";
+      deleteTab(id);
+
+      if (hasContent) {
+        toast("Tab deleted", {
+          action: {
+            label: "Undo",
+            onClick: () => restoreTab(tab),
+          },
+          duration: 5000,
+        });
+      }
+    },
+    [tabs, deleteTab, restoreTab],
+  );
 
   if (!rehydrated) {
     return <FullscreenLoading />;
@@ -65,6 +86,13 @@ export default function NotepadContent() {
     .map((id) => tabs[id])
     .filter((tab): tab is import("../store").NotepadTab => Boolean(tab));
   const activeTab = tabs[activeTabId] || orderedTabs[0] || null;
+  const tabCount = orderedTabs.length;
+
+  // Detect first-visit empty state
+  const isFirstVisit =
+    tabCount === 1 &&
+    activeTab?.content === "" &&
+    activeTab?.title === "Untitled";
 
   return (
     <div className="h-dvh flex flex-col">
@@ -97,7 +125,7 @@ export default function NotepadContent() {
                 titleInputRef={titleInputRef}
                 textareaRef={textareaRef}
                 onTitleChange={(id, title) => updateTab(id, { title })}
-                onDelete={deleteTab}
+                onDelete={handleDeleteTab}
               />
             </div>
           ))}
@@ -136,34 +164,51 @@ export default function NotepadContent() {
         </Tooltip>
       </div>
 
-      {/* Textarea */}
+      {/* Writing area */}
       {activeTab && (
-        <textarea
-          ref={textareaRef}
-          value={activeTab.content}
-          onChange={(e) => {
-            const newValue = e.target.value;
-            // Limit to 1MB of text per tab to prevent localStorage exhaustion
-            if (newValue.length <= 1000000) {
-              updateTab(activeTab.id, { content: newValue });
-            }
-          }}
-          className="flex-1 w-full p-4 resize-none outline-none bg-background font-sans"
-          placeholder="Start typing... (Press / to focus)"
-          autoFocus
-        />
+        <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex flex-col max-w-prose mx-auto w-full px-6 pt-8">
+            {isFirstVisit && (
+              <p className="text-sm text-muted-foreground/50 mb-6 leading-relaxed select-none">
+                Your notes are saved locally in this browser.
+                <br />
+                {isMac ? "⌘" : "Ctrl+"}K to create a new tab.
+              </p>
+            )}
+            <textarea
+              ref={textareaRef}
+              value={activeTab.content}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                if (newValue.length <= 1000000) {
+                  updateTab(activeTab.id, { content: newValue });
+                } else {
+                  toast.error("Content limit reached (1MB)");
+                }
+              }}
+              className="flex-1 w-full resize-none outline-none bg-transparent text-base leading-relaxed placeholder:text-muted-foreground/40"
+              placeholder="Start typing..."
+              autoFocus
+            />
+          </div>
+        </div>
       )}
 
       {/* Status bar */}
       {activeTab && (
-        <div className="bg-background px-4 py-1.5 text-xs text-muted-foreground flex justify-end gap-3 border-t">
+        <div className="bg-background px-4 py-1.5 text-xs text-muted-foreground flex items-center gap-3 border-t">
+          <span className="opacity-60">
+            {tabCount} {tabCount === 1 ? "tab" : "tabs"}
+          </span>
+          <div className="flex-1" />
+          <span className="opacity-60">Saved</span>
           <span>
             {activeTab.content.trim()
               ? activeTab.content.trim().split(/\s+/).length
               : 0}{" "}
             words
           </span>
-          <span>{activeTab.content.length} characters</span>
+          <span>{activeTab.content.length} chars</span>
         </div>
       )}
 

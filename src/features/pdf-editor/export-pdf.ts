@@ -11,7 +11,7 @@ function hexToRgb(hex: string) {
 
 export async function exportPdf(
   originalData: ArrayBuffer,
-  annotations: Annotation[]
+  annotations: Annotation[],
 ): Promise<ArrayBuffer> {
   const pdfDoc = await PDFDocument.load(originalData);
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -28,7 +28,17 @@ export async function exportPdf(
         const lineHeight = ann.fontSize * 1.3;
         let y = (1 - ann.position.y) * height - ann.fontSize;
         for (const line of lines) {
-          try { page.drawText(line, { x: ann.position.x * width, y, size: ann.fontSize, font, color }); } catch { /* non-encodable chars */ }
+          try {
+            page.drawText(line, {
+              x: ann.position.x * width,
+              y,
+              size: ann.fontSize,
+              font,
+              color,
+            });
+          } catch {
+            /* non-encodable chars */
+          }
           y -= lineHeight;
         }
         break;
@@ -48,8 +58,14 @@ export async function exportPdf(
         const color = hexToRgb(ann.color);
         for (let i = 0; i < ann.points.length - 1; i++) {
           page.drawLine({
-            start: { x: ann.points[i].x * width, y: (1 - ann.points[i].y) * height },
-            end: { x: ann.points[i + 1].x * width, y: (1 - ann.points[i + 1].y) * height },
+            start: {
+              x: ann.points[i].x * width,
+              y: (1 - ann.points[i].y) * height,
+            },
+            end: {
+              x: ann.points[i + 1].x * width,
+              y: (1 - ann.points[i + 1].y) * height,
+            },
             thickness: ann.lineWidth,
             color,
           });
@@ -64,9 +80,16 @@ export async function exportPdf(
         const name = `field_${ann.id}`;
 
         // Helper: setText safely — skip non-Latin chars that WinAnsi can't encode
-        const safeSetText = (field: ReturnType<typeof form.createTextField>, val: string) => {
+        const safeSetText = (
+          field: ReturnType<typeof form.createTextField>,
+          val: string,
+        ) => {
           if (!val) return;
-          try { field.setText(val); } catch { /* non-encodable chars — field left empty */ }
+          try {
+            field.setText(val);
+          } catch {
+            /* non-encodable chars — field left empty */
+          }
         };
 
         switch (ann.fieldType) {
@@ -78,9 +101,15 @@ export async function exportPdf(
           }
           case "dropdown": {
             const dd = form.createDropdown(name);
-            const opts = ann.options?.length ? ann.options : ["Option 1", "Option 2", "Option 3"];
+            const opts = ann.options?.length
+              ? ann.options
+              : ["Option 1", "Option 2", "Option 3"];
             dd.setOptions(opts);
-            try { if (ann.value) dd.select(ann.value); } catch { /* skip */ }
+            try {
+              if (ann.value) dd.select(ann.value);
+            } catch {
+              /* skip */
+            }
             dd.addToPage(page, { x: fx, y: fy, width: fw, height: fh });
             break;
           }
@@ -88,7 +117,10 @@ export async function exportPdf(
             const sig = form.createTextField(name);
             safeSetText(sig, ann.value);
             sig.addToPage(page, {
-              x: fx, y: fy, width: fw, height: fh,
+              x: fx,
+              y: fy,
+              width: fw,
+              height: fh,
               borderWidth: 1,
               borderColor: rgb(0.42, 0.45, 0.5),
             });
@@ -98,7 +130,10 @@ export async function exportPdf(
             const tf = form.createTextField(name);
             safeSetText(tf, ann.value);
             tf.addToPage(page, {
-              x: fx, y: fy, width: fw, height: fh,
+              x: fx,
+              y: fy,
+              width: fw,
+              height: fh,
               borderWidth: 1,
               borderColor: rgb(0.23, 0.51, 0.93),
             });

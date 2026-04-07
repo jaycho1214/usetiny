@@ -63,9 +63,7 @@ export function ShortcutsDialog({ open, onOpenChange }: Props) {
     },
     {
       title: "File",
-      shortcuts: [
-        { keys: [mod, "S"], label: "Export PDF" },
-      ],
+      shortcuts: [{ keys: [mod, "S"], label: "Export PDF" }],
     },
   ];
 

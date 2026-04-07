@@ -60,13 +60,48 @@ interface Props {
   onClose: () => void;
 }
 
-const editTools: { id: Tool; icon: React.ReactNode; label: string; shortcut: string }[] = [
-  { id: "select", icon: <MousePointer2 className="h-4 w-4" />, label: "Select", shortcut: "V" },
-  { id: "text", icon: <Type className="h-4 w-4" />, label: "Text", shortcut: "T" },
-  { id: "draw", icon: <Pencil className="h-4 w-4" />, label: "Draw", shortcut: "D" },
-  { id: "highlight", icon: <Highlighter className="h-4 w-4" />, label: "Highlight", shortcut: "H" },
-  { id: "form", icon: <FormInput className="h-4 w-4" />, label: "Form", shortcut: "F" },
-  { id: "eraser", icon: <Eraser className="h-4 w-4" />, label: "Eraser", shortcut: "E" },
+const editTools: {
+  id: Tool;
+  icon: React.ReactNode;
+  label: string;
+  shortcut: string;
+}[] = [
+  {
+    id: "select",
+    icon: <MousePointer2 className="h-4 w-4" />,
+    label: "Select",
+    shortcut: "V",
+  },
+  {
+    id: "text",
+    icon: <Type className="h-4 w-4" />,
+    label: "Text",
+    shortcut: "T",
+  },
+  {
+    id: "draw",
+    icon: <Pencil className="h-4 w-4" />,
+    label: "Draw",
+    shortcut: "D",
+  },
+  {
+    id: "highlight",
+    icon: <Highlighter className="h-4 w-4" />,
+    label: "Highlight",
+    shortcut: "H",
+  },
+  {
+    id: "form",
+    icon: <FormInput className="h-4 w-4" />,
+    label: "Form",
+    shortcut: "F",
+  },
+  {
+    id: "eraser",
+    icon: <Eraser className="h-4 w-4" />,
+    label: "Eraser",
+    shortcut: "E",
+  },
 ];
 
 const FORM_TYPES: { value: FormFieldType; label: string }[] = [
@@ -78,12 +113,28 @@ const FORM_TYPES: { value: FormFieldType; label: string }[] = [
 ];
 
 const COLORS = [
-  "#000000", "#dc2626", "#ea580c", "#ca8a04",
-  "#16a34a", "#2563eb", "#7c3aed", "#db2777", "#ffffff",
+  "#000000",
+  "#dc2626",
+  "#ea580c",
+  "#ca8a04",
+  "#16a34a",
+  "#2563eb",
+  "#7c3aed",
+  "#db2777",
+  "#ffffff",
 ];
 
-function Btn({ children, tooltip, active, className, ...props }: {
-  children: React.ReactNode; tooltip: string; active?: boolean; className?: string;
+function Btn({
+  children,
+  tooltip,
+  active,
+  className,
+  ...props
+}: {
+  children: React.ReactNode;
+  tooltip: string;
+  active?: boolean;
+  className?: string;
 } & React.ComponentProps<typeof Button>) {
   return (
     <Tooltip>
@@ -91,18 +142,29 @@ function Btn({ children, tooltip, active, className, ...props }: {
         <Button
           variant="ghost"
           size="icon"
-          className={cn("h-7 w-7 rounded-md", active && "bg-secondary text-secondary-foreground", className)}
+          className={cn(
+            "h-7 w-7 rounded-md",
+            active && "bg-secondary text-secondary-foreground",
+            className,
+          )}
           {...props}
         >
           {children}
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="text-xs">{tooltip}</TooltipContent>
+      <TooltipContent side="bottom" className="text-xs">
+        {tooltip}
+      </TooltipContent>
     </Tooltip>
   );
 }
 
-export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Props) {
+export function PDFToolbar({
+  onExport,
+  exporting,
+  onShowShortcuts,
+  onClose,
+}: Props) {
   const isMac = useIsMac();
   const mod = isMac ? "\u2318" : "Ctrl+";
 
@@ -135,10 +197,25 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
   const toggleSidebar = usePDFEditorStore((s) => s.toggleSidebar);
 
   const isFillMode = activeTool === "fill";
-  const showColor = !isFillMode && (activeTool === "draw" || activeTool === "text" || activeTool === "highlight");
-  const activeColor = activeTool === "draw" ? drawColor : activeTool === "text" ? textColor : highlightColor;
-  const setActiveColor = activeTool === "draw" ? setDrawColor : activeTool === "text" ? setTextColor : setHighlightColor;
-  const showSize = !isFillMode && (activeTool === "draw" || activeTool === "text");
+  const showColor =
+    !isFillMode &&
+    (activeTool === "draw" ||
+      activeTool === "text" ||
+      activeTool === "highlight");
+  const activeColor =
+    activeTool === "draw"
+      ? drawColor
+      : activeTool === "text"
+        ? textColor
+        : highlightColor;
+  const setActiveColor =
+    activeTool === "draw"
+      ? setDrawColor
+      : activeTool === "text"
+        ? setTextColor
+        : setHighlightColor;
+  const showSize =
+    !isFillMode && (activeTool === "draw" || activeTool === "text");
 
   const handleModeChange = (mode: string) => {
     if (mode === "fill") setActiveTool("fill");
@@ -148,20 +225,34 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
   return (
     <div className="bg-background px-3 py-1.5 flex items-center gap-2">
       {/* Header */}
-      <Link href="/" className="text-sm font-semibold transition-opacity hover:opacity-70">
+      <Link
+        href="/"
+        className="text-sm font-semibold transition-opacity hover:opacity-70"
+      >
         UseTiny
       </Link>
 
       {/* Sidebar toggle */}
       <Btn tooltip="Toggle sidebar" onClick={toggleSidebar}>
-        {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+        {sidebarOpen ? (
+          <PanelLeftClose className="h-4 w-4" />
+        ) : (
+          <PanelLeftOpen className="h-4 w-4" />
+        )}
       </Btn>
 
       {/* Mode switcher */}
-      <Tabs value={isFillMode ? "fill" : "edit"} onValueChange={handleModeChange}>
+      <Tabs
+        value={isFillMode ? "fill" : "edit"}
+        onValueChange={handleModeChange}
+      >
         <TabsList className="h-7 p-0.5">
-          <TabsTrigger value="edit" className="h-6 px-2.5 text-xs">Edit</TabsTrigger>
-          <TabsTrigger value="fill" className="h-6 px-2.5 text-xs">Fill</TabsTrigger>
+          <TabsTrigger value="edit" className="h-6 px-2.5 text-xs">
+            Edit
+          </TabsTrigger>
+          <TabsTrigger value="fill" className="h-6 px-2.5 text-xs">
+            Fill
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -173,7 +264,11 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
             <Btn tooltip={`Undo (${mod}Z)`} disabled={!canUndo} onClick={undo}>
               <Undo2 className="h-4 w-4" />
             </Btn>
-            <Btn tooltip={`Redo (${mod}\u21E7Z)`} disabled={!canRedo} onClick={redo}>
+            <Btn
+              tooltip={`Redo (${mod}\u21E7Z)`}
+              disabled={!canRedo}
+              onClick={redo}
+            >
               <Redo2 className="h-4 w-4" />
             </Btn>
           </div>
@@ -196,15 +291,24 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
           {activeTool === "form" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-xs font-normal">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1 px-2 text-xs font-normal"
+                >
                   {FORM_TYPES.find((f) => f.value === activeFormType)?.label}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 {FORM_TYPES.map((ft) => (
-                  <DropdownMenuItem key={ft.value} onClick={() => setActiveFormType(ft.value)}>
+                  <DropdownMenuItem
+                    key={ft.value}
+                    onClick={() => setActiveFormType(ft.value)}
+                  >
                     {ft.label}
-                    {activeFormType === ft.value && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {activeFormType === ft.value && (
+                      <Check className="ml-auto h-3.5 w-3.5" />
+                    )}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -217,7 +321,10 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
               <Popover>
                 <PopoverTrigger asChild>
                   <button className="flex h-7 w-7 items-center justify-center rounded-md transition-colors hover:bg-accent">
-                    <div className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: activeColor }} />
+                    <div
+                      className="h-4 w-4 rounded-full border border-border"
+                      style={{ backgroundColor: activeColor }}
+                    />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-2.5" align="start">
@@ -227,7 +334,9 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
                         key={c}
                         className={cn(
                           "h-6 w-6 rounded-full border-2 transition-transform hover:scale-110",
-                          activeColor === c ? "border-foreground scale-110" : "border-transparent",
+                          activeColor === c
+                            ? "border-foreground scale-110"
+                            : "border-transparent",
                         )}
                         style={{ backgroundColor: c }}
                         onClick={() => setActiveColor(c)}
@@ -239,19 +348,37 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
               {showSize && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-normal tabular-nums text-muted-foreground">
-                      {activeTool === "draw" ? `${drawLineWidth}px` : `${textFontSize}pt`}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-xs font-normal tabular-nums text-muted-foreground"
+                    >
+                      {activeTool === "draw"
+                        ? `${drawLineWidth}px`
+                        : `${textFontSize}pt`}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-40 p-3" align="start">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">{activeTool === "draw" ? "Stroke" : "Size"}</span>
-                        <span className="text-xs tabular-nums">{activeTool === "draw" ? `${drawLineWidth}px` : `${textFontSize}pt`}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {activeTool === "draw" ? "Stroke" : "Size"}
+                        </span>
+                        <span className="text-xs tabular-nums">
+                          {activeTool === "draw"
+                            ? `${drawLineWidth}px`
+                            : `${textFontSize}pt`}
+                        </span>
                       </div>
                       <Slider
-                        value={[activeTool === "draw" ? drawLineWidth : textFontSize]}
-                        onValueChange={([v]) => activeTool === "draw" ? setDrawLineWidth(v) : setTextFontSize(v)}
+                        value={[
+                          activeTool === "draw" ? drawLineWidth : textFontSize,
+                        ]}
+                        onValueChange={([v]) =>
+                          activeTool === "draw"
+                            ? setDrawLineWidth(v)
+                            : setTextFontSize(v)
+                        }
                         min={activeTool === "draw" ? 1 : 8}
                         max={activeTool === "draw" ? 12 : 72}
                         step={activeTool === "draw" ? 1 : 2}
@@ -266,16 +393,34 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
           {/* Text formatting — bold, italic, font family */}
           {activeTool === "text" && (
             <div className="flex items-center gap-0.5">
-              <Btn tooltip="Bold" active={textBold} onClick={() => setTextBold(!textBold)}>
+              <Btn
+                tooltip="Bold"
+                active={textBold}
+                onClick={() => setTextBold(!textBold)}
+              >
                 <span className="text-xs font-bold">B</span>
               </Btn>
-              <Btn tooltip="Italic" active={textItalic} onClick={() => setTextItalic(!textItalic)}>
+              <Btn
+                tooltip="Italic"
+                active={textItalic}
+                onClick={() => setTextItalic(!textItalic)}
+              >
                 <span className="text-xs italic">I</span>
               </Btn>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs font-normal">
-                    {textFontFamily === "sans-serif" ? "Sans" : textFontFamily === "serif" ? "Serif" : textFontFamily === "monospace" ? "Mono" : "Cursive"}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs font-normal"
+                  >
+                    {textFontFamily === "sans-serif"
+                      ? "Sans"
+                      : textFontFamily === "serif"
+                        ? "Serif"
+                        : textFontFamily === "monospace"
+                          ? "Mono"
+                          : "Cursive"}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
@@ -285,22 +430,29 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
                     { value: "monospace", label: "Monospace" },
                     { value: "cursive", label: "Cursive" },
                   ].map((f) => (
-                    <DropdownMenuItem key={f.value} onClick={() => setTextFontFamily(f.value)} style={{ fontFamily: f.value }}>
+                    <DropdownMenuItem
+                      key={f.value}
+                      onClick={() => setTextFontFamily(f.value)}
+                      style={{ fontFamily: f.value }}
+                    >
                       {f.label}
-                      {textFontFamily === f.value && <Check className="ml-auto h-3.5 w-3.5" />}
+                      {textFontFamily === f.value && (
+                        <Check className="ml-auto h-3.5 w-3.5" />
+                      )}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           )}
-
         </>
       )}
 
       {/* Fill mode hint */}
       {isFillMode && (
-        <span className="text-xs text-muted-foreground">Click form fields to fill</span>
+        <span className="text-xs text-muted-foreground">
+          Click form fields to fill
+        </span>
       )}
 
       <div className="flex-1" />
@@ -315,7 +467,10 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <span>
-                <Btn tooltip="Clear all" className="text-destructive hover:text-destructive">
+                <Btn
+                  tooltip="Clear all"
+                  className="text-destructive hover:text-destructive"
+                >
                   <Trash2 className="h-4 w-4" />
                 </Btn>
               </span>
@@ -323,17 +478,31 @@ export function PDFToolbar({ onExport, exporting, onShowShortcuts, onClose }: Pr
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Clear all annotations?</AlertDialogTitle>
-                <AlertDialogDescription>This will remove all annotations from every page. This action can be undone.</AlertDialogDescription>
+                <AlertDialogDescription>
+                  This will remove all annotations from every page. This action
+                  can be undone.
+                </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={clearAnnotations} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Clear all</AlertDialogAction>
+                <AlertDialogAction
+                  onClick={clearAnnotations}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Clear all
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         )}
 
-        <Button size="sm" variant="outline" className="h-7 gap-1.5 px-3 text-xs" onClick={onExport} disabled={exporting}>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-7 gap-1.5 px-3 text-xs"
+          onClick={onExport}
+          disabled={exporting}
+        >
           <Download className="h-3.5 w-3.5" />
           {exporting ? "Saving..." : "Export"}
         </Button>

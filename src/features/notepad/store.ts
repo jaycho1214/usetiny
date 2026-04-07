@@ -15,6 +15,7 @@ interface NotepadStore {
   activeTabId: string;
   createTab: () => void;
   deleteTab: (id: string) => void;
+  restoreTab: (tab: NotepadTab) => void;
   updateTab: (
     id: string,
     updates: Partial<Omit<NotepadTab, "lastEditedAt">>,
@@ -97,6 +98,16 @@ export const useNotepadStore = create<NotepadStore>()(
           tabs: remainingTabs,
           tabOrder: computeTabOrder(remainingTabs),
           activeTabId: newActiveId,
+        });
+      },
+      restoreTab: (tab) => {
+        const state = get();
+        if (Object.keys(state.tabs).length >= 50) return;
+        const newTabs = { ...state.tabs, [tab.id]: tab };
+        set({
+          tabs: newTabs,
+          tabOrder: computeTabOrder(newTabs),
+          activeTabId: tab.id,
         });
       },
       updateTab: (id, updates) => {

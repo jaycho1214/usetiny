@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/context-menu";
 import { Badge } from "@/components/ui/badge";
 import { usePDFEditorStore } from "../store";
-import { duplicatePage, deletePage, rotatePage, movePageUp, movePageDown } from "../page-ops";
+import {
+  duplicatePage,
+  deletePage,
+  rotatePage,
+  movePageUp,
+  movePageDown,
+} from "../page-ops";
 
 interface Props {
   pdfDoc: PDFDocumentProxy;
@@ -37,15 +43,24 @@ export function PDFSidebar({ pdfDoc }: Props) {
     return counts;
   }, [annotations]);
 
-  const handlePageOp = useCallback(async (op: () => Promise<{ data: ArrayBuffer; totalPages: number; updateAnnotations: (anns: typeof annotations) => typeof annotations }>) => {
-    if (!pdfData) return;
-    try {
-      const result = await op();
-      applyPageOp(result.data, result.totalPages, result.updateAnnotations);
-    } catch (err) {
-      toast.error((err as Error).message);
-    }
-  }, [pdfData, applyPageOp]);
+  const handlePageOp = useCallback(
+    async (
+      op: () => Promise<{
+        data: ArrayBuffer;
+        totalPages: number;
+        updateAnnotations: (anns: typeof annotations) => typeof annotations;
+      }>,
+    ) => {
+      if (!pdfData) return;
+      try {
+        const result = await op();
+        applyPageOp(result.data, result.totalPages, result.updateAnnotations);
+      } catch (err) {
+        toast.error((err as Error).message);
+      }
+    },
+    [pdfData, applyPageOp],
+  );
 
   if (!sidebarOpen) return null;
 
@@ -68,22 +83,32 @@ export function PDFSidebar({ pdfDoc }: Props) {
             </div>
           </ContextMenuTrigger>
           <ContextMenuContent>
-            <ContextMenuItem onClick={() => handlePageOp(() => duplicatePage(pdfData!, i))}>
+            <ContextMenuItem
+              onClick={() => handlePageOp(() => duplicatePage(pdfData!, i))}
+            >
               <Copy className="mr-2 h-3.5 w-3.5" /> Duplicate
             </ContextMenuItem>
-            <ContextMenuItem onClick={() => handlePageOp(() => rotatePage(pdfData!, i))}>
+            <ContextMenuItem
+              onClick={() => handlePageOp(() => rotatePage(pdfData!, i))}
+            >
               <RotateCw className="mr-2 h-3.5 w-3.5" /> Rotate 90°
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
               disabled={i === 0}
-              onClick={() => { handlePageOp(() => movePageUp(pdfData!, i)); setCurrentPage(Math.max(0, i - 1)); }}
+              onClick={() => {
+                handlePageOp(() => movePageUp(pdfData!, i));
+                setCurrentPage(Math.max(0, i - 1));
+              }}
             >
               <ArrowUp className="mr-2 h-3.5 w-3.5" /> Move Up
             </ContextMenuItem>
             <ContextMenuItem
               disabled={i >= totalPages - 1}
-              onClick={() => { handlePageOp(() => movePageDown(pdfData!, i, totalPages)); setCurrentPage(Math.min(totalPages - 1, i + 1)); }}
+              onClick={() => {
+                handlePageOp(() => movePageDown(pdfData!, i, totalPages));
+                setCurrentPage(Math.min(totalPages - 1, i + 1));
+              }}
             >
               <ArrowDown className="mr-2 h-3.5 w-3.5" /> Move Down
             </ContextMenuItem>
@@ -137,14 +162,19 @@ const ThumbnailPage = React.memo(function ThumbnailPage({
       canvas.height = viewport.height;
       page.render({ canvas, canvasContext: ctx, viewport });
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [pdfDoc, pageIndex]);
 
   return (
     <button
       ref={btnRef}
       onClick={onClick}
-      className={cn("group relative overflow-hidden border-2 transition-all", isActive ? "border-blue-500" : "border-transparent hover:bg-accent")}
+      className={cn(
+        "group relative overflow-hidden border-2 transition-all",
+        isActive ? "border-blue-500" : "border-transparent hover:bg-accent",
+      )}
     >
       <canvas ref={canvasRef} className="w-full bg-white" />
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3">
@@ -152,7 +182,10 @@ const ThumbnailPage = React.memo(function ThumbnailPage({
           {pageIndex + 1}
         </span>
         {annotationCount > 0 && (
-          <Badge variant="secondary" className="h-4 px-1 text-[9px] leading-none">
+          <Badge
+            variant="secondary"
+            className="h-4 px-1 text-[9px] leading-none"
+          >
             {annotationCount}
           </Badge>
         )}

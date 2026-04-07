@@ -38,8 +38,12 @@ export function usePdfDocument(data: ArrayBuffer | null) {
     const loadingTask = pdfjs.getDocument({ data: data.slice(0) });
 
     loadingTask.promise.then(
-      (pdf) => { if (!cancelled) setDoc(pdf); },
-      (err) => { if (!cancelled) console.error("Failed to load PDF:", err); }
+      (pdf) => {
+        if (!cancelled) setDoc(pdf);
+      },
+      (err) => {
+        if (!cancelled) console.error("Failed to load PDF:", err);
+      },
     );
 
     return () => {

@@ -97,7 +97,7 @@ export function ShortcutsDialog({
             Use these shortcuts to quickly generate and manage QR codes.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto max-h-[60vh]">
           {shortcuts.map((section) => (
             <div key={section.category} className="space-y-3">
               <h3 className="text-sm font-semibold text-muted-foreground">

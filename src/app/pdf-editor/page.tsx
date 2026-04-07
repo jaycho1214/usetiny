@@ -5,7 +5,7 @@ import { FullscreenLoading } from "@/components/fullscreen-loading";
 const PDFEditor = lazy(() =>
   import("@/features/pdf-editor/components/pdf-editor").then((m) => ({
     default: m.PDFEditor,
-  }))
+  })),
 );
 
 export const metadata: Metadata = {

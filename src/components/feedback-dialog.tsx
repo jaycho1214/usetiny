@@ -123,7 +123,8 @@ export function FeedbackDialog() {
           <DialogHeader>
             <DialogTitle>Send Feedback</DialogTitle>
             <DialogDescription>
-              We&apos;d love to hear your thoughts. Let us know how we can improve!
+              We&apos;d love to hear your thoughts. Let us know how we can
+              improve!
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
