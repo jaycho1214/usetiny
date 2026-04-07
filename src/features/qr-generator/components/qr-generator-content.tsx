@@ -45,6 +45,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Tooltip,
   TooltipContent,
@@ -70,7 +71,17 @@ export default function QRGeneratorContent({
 }: {
   initialType?: QRType;
 }) {
-  const [qrType, setQRType] = useState<QRType>(initialType);
+  const router = useRouter();
+  const [qrType, setQRTypeState] = useState<QRType>(initialType);
+  const setQRType = useCallback(
+    (type: QRType) => {
+      setQRTypeState(type);
+      router.replace(type === "text" ? "/qr" : `/qr/${type}`, {
+        scroll: false,
+      });
+    },
+    [router],
+  );
   const [textValue, setTextValue] = useState("");
   const [wifiData, setWifiData] = useState<WiFiData>(defaultWifiData);
   const [emailData, setEmailData] = useState<EmailData>(defaultEmailData);
