@@ -109,3 +109,22 @@ Use these import aliases (configured in `tsconfig.json` and `components.json`):
 4. **PostHog environment**: Analytics only initialize in production (`NODE_ENV === "production"`).
 
 5. **React/Next.js versions**: Uses Next.js 16 with React 19 - be aware of API changes from previous versions.
+
+## SEO
+
+**Domain**: `https://usetiny.app`
+
+### Conventions
+
+- **`robots.ts`** and **`sitemap.ts`** live in `src/app/`. Update `sitemap.ts` when adding new routes.
+- **Root metadata** in `layout.tsx` sets `metadataBase`, OpenGraph, Twitter cards, and a global description. Each page overrides `title`, `description`, `keywords`, `alternates.canonical`, and adds page-specific OpenGraph/Twitter if needed.
+- **Titles**: Keep simple (e.g., "Notepad", "QR Generator"). The template `"%s | UseTiny"` appends the brand automatically.
+- **Descriptions**: Keyword-rich, 140-155 characters, include a call to action or differentiator (e.g., "No sign-up", "runs locally").
+- **Canonical URLs**: Every page must set `alternates: { canonical: "/path" }`.
+- **JSON-LD structured data**: Each tool page includes a `<script type="application/ld+json">` with `WebApplication` schema (`applicationCategory: "UtilityApplication"`, `offers.price: "0"`). The homepage uses `WebSite` schema.
+- **Server components for SEO**: The homepage (`page.tsx`) is a server component so that all tool listings, descriptions, and links are in the initial HTML. Client interactivity (command palette) is extracted to a separate `"use client"` component.
+- **New tool pages**: When adding a new tool, ensure:
+  1. Add the route to `sitemap.ts`
+  2. Export `metadata` with `title`, `description`, `keywords`, and `alternates.canonical`
+  3. Add `WebApplication` JSON-LD with `price: "0"` and relevant `featureList`
+  4. Add the tool to the homepage tool list (both in `page.tsx` and `_components/command-palette.tsx`)

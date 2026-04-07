@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 import { withPostHogConfig } from "@posthog/nextjs-config";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   rewrites() {
     return [
       {
@@ -12,6 +11,31 @@ const nextConfig: NextConfig = {
       {
         source: "/relay-aqZo/(.*)",
         destination: "https://us.i.posthog.com/$1",
+      },
+    ];
+  },
+  redirects() {
+    return [
+      {
+        source: "/qr-code-generator",
+        destination: "/qr",
+        permanent: true,
+      },
+    ];
+  },
+  headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
       },
     ];
   },

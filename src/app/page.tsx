@@ -1,28 +1,16 @@
-"use client";
-
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { FileText, NotepadText, QrCode, ArrowRight, Heart } from "lucide-react";
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { Kbd } from "@/components/ui/kbd";
-import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FeedbackDialog } from "@/components/feedback-dialog";
+import { CommandPalette } from "./_components/command-palette";
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import type { Metadata } from "next";
 
-const tools: {
-  name: string;
-  description: string;
-  icon: LucideIcon;
-  href: string;
-}[] = [
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
+
+const tools = [
   {
     name: "Notepad",
     description: "Distraction-free text editor with tabs",
@@ -43,35 +31,23 @@ const tools: {
   },
 ];
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "UseTiny",
+  url: "https://usetiny.app",
+  description:
+    "Free browser-based tools that work instantly. Online notepad, QR code generator, and PDF editor. No sign-up, no uploads.",
+};
+
 export default function Home() {
-  const [commandOpen, setCommandOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && !commandOpen) {
-        e.preventDefault();
-        setCommandOpen(true);
-      }
-      if (e.key === "Escape" && commandOpen) {
-        setCommandOpen(false);
-        setSearch("");
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [commandOpen]);
-
-  useLayoutEffect(() => {
-    if (commandOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [commandOpen]);
-
   return (
     <div className="min-h-dvh flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <header className="flex items-center justify-end gap-2 p-4">
         <a
           href="https://buymeacoffee.com/jaycho1214"
@@ -117,15 +93,8 @@ export default function Home() {
           {/* Tools */}
           <nav aria-label="Tools">
             <ul className="space-y-1">
-              {tools.map((tool, i) => (
-                <li
-                  key={tool.href}
-                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-                  style={{
-                    animationDelay: `${i * 60}ms`,
-                    animationFillMode: "both",
-                  }}
-                >
+              {tools.map((tool) => (
+                <li key={tool.href}>
                   <Link
                     href={tool.href}
                     className="group flex items-center gap-4 rounded-xl px-4 py-3.5 -mx-4 transition-all duration-150 hover:bg-accent active:scale-[0.98]"
@@ -153,40 +122,8 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Command palette overlay */}
-      <CommandDialog
-        open={commandOpen}
-        onOpenChange={(open) => {
-          setCommandOpen(open);
-          if (!open) setSearch("");
-        }}
-        showCloseButton={false}
-      >
-        <CommandInput
-          ref={inputRef}
-          placeholder="Search tools..."
-          value={search}
-          onValueChange={setSearch}
-        />
-        <CommandList>
-          <CommandEmpty>No tools found.</CommandEmpty>
-          <CommandGroup>
-            {tools.map((tool) => (
-              <CommandItem
-                key={tool.href}
-                keywords={tool.description.toLowerCase().split(/\s+/)}
-                onSelect={() => {
-                  router.push(tool.href);
-                  setCommandOpen(false);
-                }}
-              >
-                <tool.icon />
-                <span>{tool.name}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
+      {/* Command palette (client component) */}
+      <CommandPalette />
     </div>
   );
 }

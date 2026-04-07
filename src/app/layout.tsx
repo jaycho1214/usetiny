@@ -20,8 +20,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://usetiny.app"),
   title: { default: "UseTiny", template: "%s | UseTiny" },
-  description: "A collection of useful mini tools",
+  description:
+    "Free browser-based tools that work instantly. Online notepad, QR code generator, and PDF editor. No sign-up, no uploads — everything runs locally in your browser.",
+  keywords: [
+    "free online tools",
+    "browser tools",
+    "online notepad",
+    "QR code generator",
+    "PDF editor",
+    "no sign-up",
+    "privacy",
+    "client-side",
+  ],
+  authors: [{ name: "Jay Cho", url: "https://github.com/jaycho1214" }],
+  creator: "Jay Cho",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://usetiny.app",
+    siteName: "UseTiny",
+    title: "UseTiny",
+    description:
+      "Free browser-based tools that work instantly. No sign-up, no uploads — everything runs locally.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "UseTiny",
+    description:
+      "Free browser-based tools that work instantly. No sign-up, no uploads — everything runs locally.",
+  },
 };
 
 export default function RootLayout({
