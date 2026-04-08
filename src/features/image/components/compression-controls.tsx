@@ -20,6 +20,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   ChevronDown,
   ChevronRight,
@@ -31,7 +32,6 @@ import {
 } from "lucide-react";
 import { OUTPUT_FORMATS, RESIZE_PRESETS } from "../constants";
 import type { ExifData, OutputFormat, QualityMode, ResizeMode } from "../types";
-import { cn } from "@/lib/utils";
 
 interface ControlsProps {
   outputFormat: OutputFormat;
@@ -140,8 +140,6 @@ export function CompressionControls({
     ],
   );
 
-  const isLossless = outputFormat === "png";
-
   return (
     <div className="border-t bg-background">
       <div className="flex items-stretch divide-x overflow-x-auto">
@@ -182,7 +180,7 @@ export function CompressionControls({
                 <ToggleGroupItem
                   value="manual"
                   className="h-6 w-6 p-0"
-                  disabled={isLossless}
+
                 >
                   <SlidersHorizontal className="h-3 w-3" />
                 </ToggleGroupItem>
@@ -194,7 +192,7 @@ export function CompressionControls({
                 <ToggleGroupItem
                   value="target"
                   className="h-6 w-6 p-0"
-                  disabled={isLossless}
+
                 >
                   <Target className="h-3 w-3" />
                 </ToggleGroupItem>
@@ -206,16 +204,15 @@ export function CompressionControls({
           {qualityMode === "manual" ? (
             <div className="flex items-center gap-2 flex-1">
               <Slider
-                value={[isLossless ? 100 : quality]}
+                value={[quality]}
                 min={1}
                 max={100}
                 step={1}
-                disabled={isLossless}
                 onValueChange={([v]) => onQualityChange(v)}
-                className={cn("flex-1 min-w-[100px]", isLossless && "opacity-40")}
+                className="flex-1 min-w-[100px]"
               />
               <span className="w-7 text-right text-xs tabular-nums text-muted-foreground">
-                {isLossless ? "—" : quality}
+                {quality}
               </span>
             </div>
           ) : (
@@ -223,13 +220,21 @@ export function CompressionControls({
               <Input
                 type="number"
                 min={1}
-                value={targetSizeKB}
-                onChange={(e) => {
+                defaultValue={targetSizeKB}
+                key={targetSizeKB}
+                onBlur={(e) => {
                   const v = parseInt(e.target.value);
                   if (!isNaN(v) && v > 0) onTargetSizeChange(v);
+                  else e.target.value = String(targetSizeKB);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const v = parseInt(e.currentTarget.value);
+                    if (!isNaN(v) && v > 0) onTargetSizeChange(v);
+                    else e.currentTarget.value = String(targetSizeKB);
+                  }
                 }}
                 className="h-7 w-20 px-2 text-xs tabular-nums"
-                disabled={isLossless}
               />
               <span className="text-xs text-muted-foreground">KB</span>
             </div>
@@ -241,27 +246,26 @@ export function CompressionControls({
           <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
             Resize
           </span>
-          <ToggleGroup
-            type="single"
-            value={resizeMode}
-            onValueChange={(v) => {
-              if (v) onResizeModeChange(v as ResizeMode);
-            }}
-            size="sm"
-          >
-            <ToggleGroupItem value="none" className="text-xs px-2 h-6">
-              Off
-            </ToggleGroupItem>
-            <ToggleGroupItem value="exact" className="text-xs px-2 h-6">
-              Exact
-            </ToggleGroupItem>
-            <ToggleGroupItem value="percentage" className="text-xs px-2 h-6">
-              %
-            </ToggleGroupItem>
-            <ToggleGroupItem value="preset" className="text-xs px-2 h-6">
-              Preset
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <ButtonGroup>
+            {(
+              [
+                ["none", "Off"],
+                ["exact", "Exact"],
+                ["percentage", "%"],
+                ["preset", "Preset"],
+              ] as const
+            ).map(([value, label]) => (
+              <Button
+                key={value}
+                variant={resizeMode === value ? "default" : "outline"}
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => onResizeModeChange(value)}
+              >
+                {label}
+              </Button>
+            ))}
+          </ButtonGroup>
 
           {resizeMode === "exact" && (
             <div className="flex items-center gap-1">
