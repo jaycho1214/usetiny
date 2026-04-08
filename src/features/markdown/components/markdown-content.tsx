@@ -49,8 +49,7 @@ export default function MarkdownContent() {
 
   const handleGlobalPaste = useCallback(
     (text: string) => {
-      const current = useMarkdownStore.getState().content;
-      updateContent(current ? current + "\n" + text : text);
+      updateContent(text);
       setViewMode("preview");
     },
     [updateContent, setViewMode],
