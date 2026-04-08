@@ -1,0 +1,37 @@
+/* Univer spreadsheet overrides — match UseTiny monochrome design */
+
+/* Ensure Univer fills its container */
+.spreadsheet-host [data-u-comp="app-layout"],
+.spreadsheet-host [data-u-comp="workbench-layout"] {
+  height: 100% !important;
+  border-radius: 0 !important;
+}
+
+.spreadsheet-host .univer-rounded-xl {
+  border-radius: 0 !important;
+}
+
+/* ── Hide all headerbar children except formula bar (we use our own toolbar) ── */
+.spreadsheet-host [data-u-comp="headerbar"] {
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.spreadsheet-host [data-u-comp="headerbar"] > *:not([data-u-comp="formula-bar"]) {
+  display: none !important;
+}
+
+/* ── Formula bar styling ── */
+.spreadsheet-host [data-u-comp="formula-bar"] {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* Match font */
+.spreadsheet-host {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}

@@ -1,4 +1,4 @@
-import { FileDown, FileText, NotepadText, QrCode } from "lucide-react";
+import { FileDown, FileText, NotepadText, QrCode, Sheet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface Tool {
@@ -26,6 +26,12 @@ export const allTools: Tool[] = [
     description: "Annotate, fill forms, and manage pages",
     icon: FileText,
     href: "/pdf-editor",
+  },
+  {
+    name: "Spreadsheet",
+    description: "Disposable spreadsheet with formulas and export",
+    icon: Sheet,
+    href: "/spreadsheet",
   },
   {
     name: "Markdown to PDF",
