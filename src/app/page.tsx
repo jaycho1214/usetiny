@@ -1,5 +1,4 @@
 import { Heart } from "lucide-react";
-import { Kbd } from "@/components/ui/kbd";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { FeedbackDialog } from "@/components/feedback-dialog";
 import { CommandPalette } from "./_components/command-palette";
@@ -74,10 +73,6 @@ export default function Home() {
               <ToolList />
             </nav>
 
-            {/* Keyboard hint */}
-            <p className="mt-10 flex items-center gap-1.5 text-xs text-muted-foreground/50">
-              Press <Kbd>/</Kbd> to search
-            </p>
           </div>
         </main>
 

@@ -1,11 +1,12 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Ellipsis } from "lucide-react";
 import Link from "next/link";
 import { allTools } from "@/lib/tools";
 import { getRecentOrder } from "@/lib/recent-tools";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Kbd } from "@/components/ui/kbd";
 
 function subscribe(cb: () => void) {
   window.addEventListener("storage", cb);
@@ -54,6 +55,12 @@ export function ToolList() {
     );
   }
 
+  function openCommandPalette() {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "/", bubbles: true }),
+    );
+  }
+
   return (
     <ul className="space-y-1">
       {tools.map((tool) => (
@@ -75,6 +82,24 @@ export function ToolList() {
           </Link>
         </li>
       ))}
+      <li>
+          <button
+            onClick={openCommandPalette}
+            className="group flex w-full items-center gap-4 rounded-xl px-4 py-3.5 -mx-4 transition-all duration-150 hover:bg-accent active:scale-[0.98] text-left"
+          >
+            <div className="flex items-center justify-center size-10 rounded-lg border border-dashed border-muted-foreground/25 group-hover:border-muted-foreground/40 transition-colors duration-150">
+              <Ellipsis className="size-[18px] text-muted-foreground/50 group-hover:text-muted-foreground transition-colors duration-150" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-150">
+                More tools
+              </span>
+              <p className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1">
+                Press <Kbd className="text-[10px]">/</Kbd> to search
+              </p>
+            </div>
+          </button>
+      </li>
     </ul>
   );
 }

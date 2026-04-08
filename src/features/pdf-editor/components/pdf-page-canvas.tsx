@@ -240,7 +240,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
   }, []);
 
   // ── render overlay (reads stateRef — React Compiler can't auto-memoize)
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+   
   const renderOverlay = useCallback(() => {
     const canvas = overlayCanvasRef.current;
     if (!canvas) return;
@@ -326,6 +326,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
         drawFormPreview(ctx, rx, ry, rw, rh, stateRef.current.formBorderColor);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads fresh state via stateRef to avoid re-creating on every annotation change
   }, []);
 
   // ── render PDF ────────────────────────────────────────────────────
@@ -840,7 +841,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
     rafRef.current = requestAnimationFrame(renderOverlay);
   }, [pageIndex, addAnnotation, renderOverlay]);
 
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+   
   const finalizeText = useCallback(() => {
     if (finalizingRef.current) return;
     finalizingRef.current = true;
@@ -869,10 +870,11 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
       }
     }
     setEditingText(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editingText read inside is intentionally excluded; callback is stored in a ref
   }, [pageIndex, addAnnotation, updateAnnotation]);
 
   const formInputRef = useRef<HTMLInputElement>(null);
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+   
   const finalizeForm = useCallback(() => {
     if (finalizingRef.current) return;
     finalizingRef.current = true;
@@ -886,6 +888,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
       updateAnnotation(ef.id, { label: val || "Field" });
     else updateAnnotation(ef.id, { value: val });
     setEditingForm(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- editingForm read inside is intentionally excluded; callback is stored in a ref
   }, [updateAnnotation]);
   useEffect(() => {
     finalizeTextRef.current = finalizeText;
