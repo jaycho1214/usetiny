@@ -1,4 +1,4 @@
-import { FileDown, FileText, NotepadText, QrCode, Sheet } from "lucide-react";
+import { FileDown, FileText, ImageDown, NotepadText, QrCode, Sheet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface Tool {
@@ -38,5 +38,11 @@ export const allTools: Tool[] = [
     description: "Convert Markdown to beautiful PDF",
     icon: FileDown,
     href: "/markdown",
+  },
+  {
+    name: "Image Compressor",
+    description: "Compress, resize, and convert images instantly",
+    icon: ImageDown,
+    href: "/image",
   },
 ];
