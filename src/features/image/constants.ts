@@ -139,6 +139,35 @@ export function formatToMime(format: OutputFormat): string {
   return map[format];
 }
 
+/** Recursively read all files from FileSystemEntry trees (folder drop support) */
+export async function readAllFiles(
+  entries: FileSystemEntry[],
+  out: File[],
+): Promise<void> {
+  for (const entry of entries) {
+    if (entry.isFile) {
+      const file = await new Promise<File>((resolve, reject) =>
+        (entry as FileSystemFileEntry).file(resolve, reject),
+      );
+      out.push(file);
+    } else if (entry.isDirectory) {
+      const reader = (entry as FileSystemDirectoryEntry).createReader();
+      const children = await new Promise<FileSystemEntry[]>(
+        (resolve, reject) => reader.readEntries(resolve, reject),
+      );
+      await readAllFiles(children, out);
+    }
+  }
+}
+
+export function filterImageFiles(files: File[], currentCount: number): File[] {
+  const valid = files.filter((f) => SUPPORTED_INPUT_TYPES.includes(f.type));
+  if (valid.length === 0) return [];
+  const remaining = MAX_FILES - currentCount;
+  if (valid.length > remaining) return valid.slice(0, remaining);
+  return valid;
+}
+
 export function openImagePicker(currentCount: number): Promise<File[]> {
   return new Promise((resolve) => {
     const input = document.createElement("input");

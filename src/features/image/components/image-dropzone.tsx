@@ -4,47 +4,15 @@ import { useCallback, useState } from "react";
 import { ImageUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ACCEPT_STRING, SUPPORTED_INPUT_TYPES, MAX_FILES } from "../constants";
-import { toast } from "sonner";
+import {
+  ACCEPT_STRING,
+  readAllFiles,
+  filterImageFiles,
+} from "../constants";
 
 interface Props {
   onFilesLoad: (files: File[]) => void;
   currentCount: number;
-}
-
-/** Recursively read all files from FileSystemEntry trees (folder drop support) */
-async function readAllFiles(
-  entries: FileSystemEntry[],
-  out: File[],
-): Promise<void> {
-  for (const entry of entries) {
-    if (entry.isFile) {
-      const file = await new Promise<File>((resolve, reject) =>
-        (entry as FileSystemFileEntry).file(resolve, reject),
-      );
-      out.push(file);
-    } else if (entry.isDirectory) {
-      const reader = (entry as FileSystemDirectoryEntry).createReader();
-      const children = await new Promise<FileSystemEntry[]>(
-        (resolve, reject) => reader.readEntries(resolve, reject),
-      );
-      await readAllFiles(children, out);
-    }
-  }
-}
-
-function filterImageFiles(files: File[], currentCount: number): File[] {
-  const valid = files.filter((f) => SUPPORTED_INPUT_TYPES.includes(f.type));
-  if (valid.length === 0) {
-    toast.error("No supported image files found");
-    return [];
-  }
-  const remaining = MAX_FILES - currentCount;
-  if (valid.length > remaining) {
-    toast.error(`Maximum ${MAX_FILES} files. Only adding ${remaining}.`);
-    return valid.slice(0, remaining);
-  }
-  return valid;
 }
 
 export function ImageDropzone({ onFilesLoad, currentCount }: Props) {

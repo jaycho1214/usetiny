@@ -39,6 +39,8 @@ import {
   formatToMime,
   computeSavings,
   openImagePicker,
+  readAllFiles,
+  filterImageFiles,
   THUMBNAIL_SIZE,
   QUALITY_DEBOUNCE_MS,
   BUILTIN_PRESETS,
@@ -102,6 +104,7 @@ export default function ImageContent() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showPresetDialog, setShowPresetDialog] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const processingQueue = useRef<string[]>([]);
   const isProcessing = useRef(false);
@@ -311,6 +314,34 @@ export default function ImageContent() {
     [addFile, enqueueFile],
   );
 
+  // Global drop handler — works even after files are loaded
+  const handleGlobalDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDraggingOver(false);
+      const items = e.dataTransfer.items;
+      let files: File[] = [];
+      if (items?.length) {
+        const entries: FileSystemEntry[] = [];
+        for (const item of Array.from(items)) {
+          const entry = item.webkitGetAsEntry?.();
+          if (entry) entries.push(entry);
+        }
+        if (entries.length > 0) {
+          const all: File[] = [];
+          await readAllFiles(entries, all);
+          files = all;
+        }
+      }
+      if (files.length === 0) {
+        files = Array.from(e.dataTransfer.files);
+      }
+      const valid = filterImageFiles(files, fileOrder.length);
+      if (valid.length > 0) loadFiles(valid);
+    },
+    [loadFiles, fileOrder.length],
+  );
+
   // ── Download ──────────────────────────────────────────
 
   const downloadActive = useCallback(() => {
@@ -466,7 +497,27 @@ export default function ImageContent() {
   ];
 
   return (
-    <div className="flex h-dvh flex-col bg-background">
+    <div
+      className="flex h-dvh flex-col bg-background"
+      onDrop={handleGlobalDrop}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDraggingOver(true);
+      }}
+      onDragLeave={(e) => {
+        // Only trigger when leaving the container itself, not children
+        if (e.currentTarget === e.target) setIsDraggingOver(false);
+      }}
+    >
+      {/* Drop overlay */}
+      {isDraggingOver && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="rounded-lg border-2 border-dashed border-foreground/30 px-8 py-4 text-sm text-muted-foreground">
+            Drop to add images
+          </div>
+        </div>
+      )}
+
       {/* Navbar */}
       <div className="flex items-center gap-2 border-b bg-background px-4 py-2">
         <Link
