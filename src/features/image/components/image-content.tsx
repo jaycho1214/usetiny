@@ -567,7 +567,7 @@ export default function ImageContent() {
                 onClick={() => deleteCustomPreset(p.id)}
                 className="text-xs text-destructive"
               >
-                Delete "{p.name}"
+                Delete &ldquo;{p.name}&rdquo;
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />

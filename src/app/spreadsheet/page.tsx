@@ -1,6 +1,9 @@
-import { Suspense } from "react";
-import SpreadsheetContent from "@/features/spreadsheet/components/spreadsheet-content";
+import { Suspense, lazy } from "react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+
+const SpreadsheetContent = lazy(
+  () => import("@/features/spreadsheet/components/spreadsheet-content"),
+);
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

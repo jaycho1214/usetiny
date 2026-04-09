@@ -5,7 +5,7 @@ import { useIsMac, useKeyboardShortcuts } from "./keyboard-shortcuts";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Keyboard, Plus } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -20,16 +20,14 @@ import { TabTitleInput } from "./tab-title-input";
 import { toast } from "sonner";
 
 export default function NotepadContent() {
-  const {
-    tabs,
-    tabOrder,
-    activeTabId,
-    createTab,
-    deleteTab,
-    restoreTab,
-    updateTab,
-    setActiveTab,
-  } = useNotepadStore();
+  const tabs = useNotepadStore((s) => s.tabs);
+  const tabOrder = useNotepadStore((s) => s.tabOrder);
+  const activeTabId = useNotepadStore((s) => s.activeTabId);
+  const createTab = useNotepadStore((s) => s.createTab);
+  const deleteTab = useNotepadStore((s) => s.deleteTab);
+  const restoreTab = useNotepadStore((s) => s.restoreTab);
+  const updateTab = useNotepadStore((s) => s.updateTab);
+  const setActiveTab = useNotepadStore((s) => s.setActiveTab);
 
   const isMac = useIsMac();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -77,16 +75,24 @@ export default function NotepadContent() {
     [tabs, deleteTab, restoreTab],
   );
 
-  if (!rehydrated) {
-    return <FullscreenLoading />;
-  }
-
   // Compute derived values from state
   const orderedTabs = tabOrder
     .map((id) => tabs[id])
     .filter((tab): tab is import("../store").NotepadTab => Boolean(tab));
   const activeTab = tabs[activeTabId] || orderedTabs[0] || null;
   const tabCount = orderedTabs.length;
+
+  const wordCount = useMemo(
+    () =>
+      activeTab?.content.trim()
+        ? activeTab.content.trim().split(/\s+/).length
+        : 0,
+    [activeTab?.content],
+  );
+
+  if (!rehydrated) {
+    return <FullscreenLoading />;
+  }
 
   // Detect first-visit empty state
   const isFirstVisit =
@@ -202,12 +208,7 @@ export default function NotepadContent() {
           </span>
           <div className="flex-1" />
           <span className="opacity-60">Saved</span>
-          <span>
-            {activeTab.content.trim()
-              ? activeTab.content.trim().split(/\s+/).length
-              : 0}{" "}
-            words
-          </span>
+          <span>{wordCount} words</span>
           <span>{activeTab.content.length} chars</span>
         </div>
       )}

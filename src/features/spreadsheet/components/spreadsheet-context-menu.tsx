@@ -134,11 +134,10 @@ function useViewportClamp(
   menuRef: React.RefObject<HTMLDivElement | null>,
   position: MenuPosition,
 ) {
-  const [adjusted, setAdjusted] = useState(position);
-
   useEffect(() => {
-    if (!menuRef.current) return;
-    const rect = menuRef.current.getBoundingClientRect();
+    const el = menuRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const nx = position.x + rect.width > vw ? vw - rect.width - 8 : position.x;
@@ -146,10 +145,9 @@ function useViewportClamp(
       position.y + rect.height > vh
         ? Math.max(8, position.y - rect.height)
         : position.y;
-    setAdjusted({ x: nx, y: ny });
+    el.style.left = `${nx}px`;
+    el.style.top = `${ny}px`;
   }, [menuRef, position]);
-
-  return adjusted;
 }
 
 // ── Cell context menu ───────────────────────────────────
@@ -164,7 +162,7 @@ export function SpreadsheetContextMenuPortal({
   onClose: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const adjusted = useViewportClamp(menuRef, position);
+  useViewportClamp(menuRef, position);
   useMenuDismiss(menuRef, onClose);
 
   const exec = useCallback(
@@ -183,7 +181,7 @@ export function SpreadsheetContextMenuPortal({
         "fixed z-[9999] min-w-[200px] max-h-[80vh] overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
         "animate-in fade-in-0 zoom-in-95",
       )}
-      style={{ left: adjusted.x, top: adjusted.y }}
+      style={{ left: position.x, top: position.y }}
     >
       <MenuItem
         icon={ClipboardCopy}
@@ -283,7 +281,7 @@ export function SheetContextMenuPortal({
   onClose: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
-  const adjusted = useViewportClamp(menuRef, position);
+  useViewportClamp(menuRef, position);
   useMenuDismiss(menuRef, onClose);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -330,7 +328,7 @@ export function SheetContextMenuPortal({
           "fixed z-[9999] w-[240px] rounded-md border bg-popover p-3 text-popover-foreground shadow-md",
           "animate-in fade-in-0 zoom-in-95",
         )}
-        style={{ left: adjusted.x, top: adjusted.y }}
+        style={{ left: position.x, top: position.y }}
       >
         <p className="text-sm font-medium mb-1">Delete this sheet?</p>
         <p className="text-xs text-muted-foreground mb-3">
@@ -364,7 +362,7 @@ export function SheetContextMenuPortal({
         "fixed z-[9999] min-w-[160px] rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
         "animate-in fade-in-0 zoom-in-95",
       )}
-      style={{ left: adjusted.x, top: adjusted.y }}
+      style={{ left: position.x, top: position.y }}
     >
       <MenuItem icon={Pencil} label="Rename" onClick={handleRename} />
       <MenuItem icon={Copy} label="Duplicate" onClick={handleDuplicate} />

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { withPostHogConfig } from "@posthog/nextjs-config";
 
 const nextConfig: NextConfig = {
-  rewrites() {
+  async rewrites() {
     return [
       {
         source: "/relay-aqZo/static/(.*)",
@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  redirects() {
+  async redirects() {
     return [
       {
         source: "/qr-code-generator",
@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  headers() {
+  async headers() {
     return [
       {
         source: "/(.*)",

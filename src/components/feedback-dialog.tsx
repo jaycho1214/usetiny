@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2Icon, MessageSquare } from "lucide-react";
 import {
   Dialog,
@@ -25,9 +25,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import posthog from "posthog-js";
 
 const SURVEY_ID = "019a95b4-b799-0000-581c-00eb63b58605";
+
+function getPostHog() {
+  return import("posthog-js").then((m) => m.default);
+}
 
 export function FeedbackDialog() {
   const [open, setOpen] = useState(false);
@@ -36,9 +39,7 @@ export function FeedbackDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
-  const hasContent = useMemo(() => {
-    return email.trim() !== "" || feedback.trim() !== "";
-  }, [email, feedback]);
+  const hasContent = email.trim() !== "" || feedback.trim() !== "";
 
   const handleClose = useCallback(() => {
     if (hasContent) {
@@ -68,6 +69,7 @@ export function FeedbackDialog() {
 
       // Simulate API call - replace with actual API endpoint
       try {
+        const posthog = await getPostHog();
         posthog.capture(
           "survey sent",
           {
@@ -102,12 +104,18 @@ export function FeedbackDialog() {
     [handleClose],
   );
 
+  const prevOpenRef = useRef(false);
   useEffect(() => {
     if (open) {
-      posthog.capture("survey shown", { $survey_id: SURVEY_ID });
-    } else {
-      posthog.capture("survey dismissed", { $survey_id: SURVEY_ID });
+      getPostHog().then((ph) =>
+        ph.capture("survey shown", { $survey_id: SURVEY_ID }),
+      );
+    } else if (prevOpenRef.current) {
+      getPostHog().then((ph) =>
+        ph.capture("survey dismissed", { $survey_id: SURVEY_ID }),
+      );
     }
+    prevOpenRef.current = open;
   }, [open]);
 
   return (

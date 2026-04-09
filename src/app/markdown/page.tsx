@@ -1,6 +1,9 @@
-import { Suspense } from "react";
-import MarkdownContent from "@/features/markdown/components/markdown-content";
+import { Suspense, lazy } from "react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+
+const MarkdownContent = lazy(
+  () => import("@/features/markdown/components/markdown-content"),
+);
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

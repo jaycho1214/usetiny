@@ -155,7 +155,7 @@ export default function SpreadsheetContent() {
       }
     };
     // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [rehydrated]);
 
   // Custom context menu via native capture listener

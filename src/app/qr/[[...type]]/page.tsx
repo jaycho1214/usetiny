@@ -1,9 +1,14 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import QRGeneratorContent from "@/features/qr-generator/components/qr-generator-content";
+import dynamic from "next/dynamic";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import type { Metadata } from "next";
 import { qrTypes, type QRType } from "@/features/qr-generator/utils";
+
+const QRGeneratorContent = dynamic(
+  () => import("@/features/qr-generator/components/qr-generator-content"),
+  { ssr: false },
+);
 
 const typeMeta: Record<
   string,

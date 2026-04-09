@@ -25,8 +25,11 @@ import { ButtonGroup } from "@/components/ui/button-group";
 import { exportPdf } from "../export-pdf";
 
 export default function MarkdownContent() {
-  const { content, viewMode, exportSettings, updateContent, setViewMode } =
-    useMarkdownStore();
+  const content = useMarkdownStore((s) => s.content);
+  const viewMode = useMarkdownStore((s) => s.viewMode);
+  const exportSettings = useMarkdownStore((s) => s.exportSettings);
+  const updateContent = useMarkdownStore((s) => s.updateContent);
+  const setViewMode = useMarkdownStore((s) => s.setViewMode);
   const isMac = useIsMac();
   const rehydrated = useStoreHydration(useMarkdownStore);
 

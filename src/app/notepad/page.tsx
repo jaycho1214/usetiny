@@ -1,6 +1,9 @@
-import { Suspense } from "react";
-import NotepadContent from "@/features/notepad/components/notepad-content";
+import { Suspense, lazy } from "react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
+
+const NotepadContent = lazy(
+  () => import("@/features/notepad/components/notepad-content"),
+);
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
