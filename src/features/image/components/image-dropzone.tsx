@@ -4,11 +4,7 @@ import { useCallback, useState } from "react";
 import { ImageUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  ACCEPT_STRING,
-  readAllFiles,
-  filterImageFiles,
-} from "../constants";
+import { ACCEPT_STRING, readAllFiles, filterImageFiles } from "../constants";
 
 interface Props {
   onFilesLoad: (files: File[]) => void;
@@ -69,10 +65,7 @@ export function ImageDropzone({ onFilesLoad, currentCount }: Props) {
     input.multiple = true;
     input.onchange = () => {
       if (!input.files) return;
-      const valid = filterImageFiles(
-        Array.from(input.files),
-        currentCount,
-      );
+      const valid = filterImageFiles(Array.from(input.files), currentCount);
       if (valid.length > 0) onFilesLoad(valid);
     };
     input.click();
@@ -102,9 +95,7 @@ export function ImageDropzone({ onFilesLoad, currentCount }: Props) {
           strokeWidth={1.5}
         />
         <div className="space-y-1.5 text-center">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Open images
-          </h2>
+          <h2 className="text-lg font-semibold tracking-tight">Open images</h2>
           <p className="text-sm text-muted-foreground">
             Drop files or folders here, or click to browse
           </p>

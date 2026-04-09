@@ -187,9 +187,7 @@ export function SplitView({
               </span>
             )}
             {savings !== null && savings < 0 && (
-              <span className="ml-1 text-red-500">
-                +{Math.abs(savings)}%
-              </span>
+              <span className="ml-1 text-red-500">+{Math.abs(savings)}%</span>
             )}
           </Badge>
         </div>

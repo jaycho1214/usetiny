@@ -21,8 +21,7 @@ export default function GlobalError({
       <body
         style={{
           margin: 0,
-          fontFamily:
-            "system-ui, -apple-system, 'Segoe UI', sans-serif",
+          fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
           backgroundColor: "#0a0a0b",
           color: "#fafafa",
         }}

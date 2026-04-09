@@ -108,9 +108,7 @@ export function FileSidebar({
                 }}
                 className={cn(
                   "group flex w-full items-start gap-2 rounded-md p-1.5 text-left transition-colors cursor-pointer",
-                  isActive
-                    ? "bg-accent"
-                    : "hover:bg-accent/50",
+                  isActive ? "bg-accent" : "hover:bg-accent/50",
                 )}
               >
                 {/* Thumbnail */}

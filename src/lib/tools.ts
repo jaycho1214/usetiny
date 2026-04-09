@@ -1,4 +1,11 @@
-import { FileDown, FileText, ImageDown, NotepadText, QrCode, Sheet } from "lucide-react";
+import {
+  FileDown,
+  FileText,
+  ImageDown,
+  NotepadText,
+  QrCode,
+  Sheet,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export interface Tool {

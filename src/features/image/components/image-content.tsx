@@ -251,7 +251,17 @@ export default function ImageContent() {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [outputFormat, qualityMode, quality, targetSizeKB, resizeMode, resizeWidth, resizeHeight, resizePercent, resizePresetId]);
+  }, [
+    outputFormat,
+    qualityMode,
+    quality,
+    targetSizeKB,
+    resizeMode,
+    resizeWidth,
+    resizeHeight,
+    resizePercent,
+    resizePresetId,
+  ]);
 
   // ── File loading ──────────────────────────────────────
 
@@ -681,8 +691,7 @@ export default function ImageContent() {
             processedInfo={
               activeFile?.processedSize != null
                 ? {
-                    format:
-                      activeFile.overrideFormat ?? outputFormat,
+                    format: activeFile.overrideFormat ?? outputFormat,
                     size: activeFile.processedSize,
                     width: activeFile.processedWidth!,
                     height: activeFile.processedHeight!,

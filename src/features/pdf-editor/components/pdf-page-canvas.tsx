@@ -240,7 +240,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
   }, []);
 
   // ── render overlay (reads stateRef — React Compiler can't auto-memoize)
-   
+
   const renderOverlay = useCallback(() => {
     const canvas = overlayCanvasRef.current;
     if (!canvas) return;
@@ -841,7 +841,6 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
     rafRef.current = requestAnimationFrame(renderOverlay);
   }, [pageIndex, addAnnotation, renderOverlay]);
 
-   
   const finalizeText = useCallback(() => {
     if (finalizingRef.current) return;
     finalizingRef.current = true;
@@ -874,7 +873,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
   }, [pageIndex, addAnnotation, updateAnnotation]);
 
   const formInputRef = useRef<HTMLInputElement>(null);
-   
+
   const finalizeForm = useCallback(() => {
     if (finalizingRef.current) return;
     finalizingRef.current = true;

@@ -118,8 +118,7 @@ export const useImageStore = create<ImageStore>()(
           if (removed) {
             if (removed.originalUrl) URL.revokeObjectURL(removed.originalUrl);
             // thumbnailUrl is a data URL (toDataURL), no revocation needed
-            if (removed.processedUrl)
-              URL.revokeObjectURL(removed.processedUrl);
+            if (removed.processedUrl) URL.revokeObjectURL(removed.processedUrl);
           }
           const newOrder = s.fileOrder.filter((fid) => fid !== id);
           let newActive = s.activeFileId;

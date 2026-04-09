@@ -31,10 +31,7 @@ function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-function gpsToDecimal(
-  ref: string,
-  coords: [number, number][],
-): number | null {
+function gpsToDecimal(ref: string, coords: [number, number][]): number | null {
   if (!coords || coords.length < 3) return null;
   const [degN, degD] = coords[0];
   const [minN, minD] = coords[1];
@@ -54,9 +51,7 @@ function rationalToString(val: [number, number] | undefined): string | null {
   return `${n / d}`;
 }
 
-export async function readExif(
-  buffer: ArrayBuffer,
-): Promise<ExifData | null> {
+export async function readExif(buffer: ArrayBuffer): Promise<ExifData | null> {
   try {
     const p = await loadPiexif();
     const dataUrl = arrayBufferToDataUrl(buffer);

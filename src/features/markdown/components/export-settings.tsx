@@ -73,9 +73,7 @@ export function ExportSettings() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground">
-              Orientation
-            </label>
+            <label className="text-xs text-muted-foreground">Orientation</label>
             <ButtonGroup className="w-full">
               {orientations.map(({ value, label }) => (
                 <Button
@@ -128,9 +126,7 @@ export function ExportSettings() {
             </label>
             <Switch
               checked={exportSettings.headerFooter}
-              onCheckedChange={(v) =>
-                updateExportSettings({ headerFooter: v })
-              }
+              onCheckedChange={(v) => updateExportSettings({ headerFooter: v })}
             />
           </div>
         </div>

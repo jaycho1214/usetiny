@@ -66,11 +66,7 @@ export function ShortcutsDialog({
                     <KbdGroup>
                       {item.keys.map((k) => (
                         <Kbd key={k}>
-                          {k === "mod"
-                            ? mod
-                            : k === "Shift"
-                              ? "⇧"
-                              : k}
+                          {k === "mod" ? mod : k === "Shift" ? "⇧" : k}
                         </Kbd>
                       ))}
                     </KbdGroup>

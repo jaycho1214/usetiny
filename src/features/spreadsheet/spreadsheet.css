@@ -22,7 +22,9 @@
   border: none !important;
 }
 
-.spreadsheet-host [data-u-comp="headerbar"] > *:not([data-u-comp="formula-bar"]) {
+.spreadsheet-host
+  [data-u-comp="headerbar"]
+  > *:not([data-u-comp="formula-bar"]) {
   display: none !important;
 }
 

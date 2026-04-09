@@ -96,20 +96,17 @@ export default function SpreadsheetContent() {
     let disposed = false;
 
     async function init() {
-      const { createUniver, LocaleType, mergeLocales } = await import(
-        "@univerjs/presets"
-      );
-      const { UniverSheetsCorePreset } = await import(
-        "@univerjs/preset-sheets-core"
-      );
+      const { createUniver, LocaleType, mergeLocales } =
+        await import("@univerjs/presets");
+      const { UniverSheetsCorePreset } =
+        await import("@univerjs/preset-sheets-core");
       const sheetsCoreEnUS = (
         await import("@univerjs/preset-sheets-core/locales/en-US")
       ).default;
 
       if (disposed || !containerRef.current) return;
 
-      const isDark =
-        document.documentElement.classList.contains("dark");
+      const isDark = document.documentElement.classList.contains("dark");
 
       const { univer, univerAPI } = createUniver({
         locale: LocaleType.EN_US,
@@ -171,7 +168,10 @@ export default function SpreadsheetContent() {
       const target = e.target as HTMLElement;
 
       // Sheet tab right-click
-      if (target.closest("[data-u=slide-tab-bar]") || target.closest("footer")) {
+      if (
+        target.closest("[data-u=slide-tab-bar]") ||
+        target.closest("footer")
+      ) {
         e.preventDefault();
         e.stopImmediatePropagation();
         setSheetCtxPosition({ x: e.clientX, y: e.clientY });

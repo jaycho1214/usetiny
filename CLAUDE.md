@@ -123,6 +123,7 @@ Use these import aliases (configured in `tsconfig.json` and `components.json`):
 - **Canonical URLs**: Every page must set `alternates: { canonical: "/path" }`.
 - **JSON-LD structured data**: Each tool page includes a `<script type="application/ld+json">` with `WebApplication` schema (`applicationCategory: "UtilityApplication"`, `offers.price: "0"`). The homepage uses `WebSite` schema.
 - **Server components for SEO**: The homepage (`page.tsx`) is a server component so that all tool listings, descriptions, and links are in the initial HTML. Client interactivity (command palette) is extracted to a separate `"use client"` component.
+
 ### OpenGraph Images
 
 Each route has an `opengraph-image.tsx` that generates a 1200×630 PNG via Next.js `ImageResponse` (Satori renderer). Preview by visiting `/<route>/opengraph-image` in the browser.

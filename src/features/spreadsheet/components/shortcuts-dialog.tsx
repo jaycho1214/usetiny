@@ -25,9 +25,7 @@ export function ShortcutsDialog({
   const shortcuts = [
     {
       category: "Export",
-      items: [
-        { keys: [modKey, "⇧", "E"], description: "Export as XLSX" },
-      ],
+      items: [{ keys: [modKey, "⇧", "E"], description: "Export as XLSX" }],
     },
     {
       category: "Editing",

@@ -152,8 +152,8 @@ export async function readAllFiles(
       out.push(file);
     } else if (entry.isDirectory) {
       const reader = (entry as FileSystemDirectoryEntry).createReader();
-      const children = await new Promise<FileSystemEntry[]>(
-        (resolve, reject) => reader.readEntries(resolve, reject),
+      const children = await new Promise<FileSystemEntry[]>((resolve, reject) =>
+        reader.readEntries(resolve, reject),
       );
       await readAllFiles(children, out);
     }

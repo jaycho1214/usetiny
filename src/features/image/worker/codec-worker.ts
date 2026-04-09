@@ -146,10 +146,7 @@ self.onmessage = async (e: MessageEvent<ProcessMessage>) => {
         data[i + 2] = Math.round(data[i + 2] * alpha + 255 * (1 - alpha));
         data[i + 3] = 255;
       }
-      const flat = new OffscreenCanvas(
-        outputCanvas.width,
-        outputCanvas.height,
-      );
+      const flat = new OffscreenCanvas(outputCanvas.width, outputCanvas.height);
       flat.getContext("2d")!.putImageData(imageData, 0, 0);
       outputCanvas = flat;
     }
@@ -191,7 +188,8 @@ self.onmessage = async (e: MessageEvent<ProcessMessage>) => {
         }
       }
 
-      encoded = bestBlob ?? await tryConvertToBlob(outputCanvas, msg.targetFormat, 1);
+      encoded =
+        bestBlob ?? (await tryConvertToBlob(outputCanvas, msg.targetFormat, 1));
       actualQuality = bestQ;
     } else {
       encoded = await tryConvertToBlob(

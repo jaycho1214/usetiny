@@ -72,7 +72,6 @@ export default function Home() {
             <nav aria-label="Tools">
               <ToolList />
             </nav>
-
           </div>
         </main>
 

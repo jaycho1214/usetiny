@@ -19,7 +19,9 @@ const marginMap: Record<Margins, string> = {
   wide: "3.81cm",
 };
 
-export const PrintStyles = memo(function PrintStyles({ settings }: PrintStylesProps) {
+export const PrintStyles = memo(function PrintStyles({
+  settings,
+}: PrintStylesProps) {
   const size = pageSizeMap[settings.pageSize];
   const orientation = settings.orientation;
   const margin = marginMap[settings.margins];

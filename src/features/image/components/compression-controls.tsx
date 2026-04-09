@@ -177,11 +177,7 @@ export function CompressionControls({
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="manual"
-                  className="h-6 w-6 p-0"
-
-                >
+                <ToggleGroupItem value="manual" className="h-6 w-6 p-0">
                   <SlidersHorizontal className="h-3 w-3" />
                 </ToggleGroupItem>
               </TooltipTrigger>
@@ -189,11 +185,7 @@ export function CompressionControls({
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <ToggleGroupItem
-                  value="target"
-                  className="h-6 w-6 p-0"
-
-                >
+                <ToggleGroupItem value="target" className="h-6 w-6 p-0">
                   <Target className="h-3 w-3" />
                 </ToggleGroupItem>
               </TooltipTrigger>

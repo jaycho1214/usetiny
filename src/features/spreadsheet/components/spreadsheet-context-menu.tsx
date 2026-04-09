@@ -141,8 +141,7 @@ function useViewportClamp(
     const rect = menuRef.current.getBoundingClientRect();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const nx =
-      position.x + rect.width > vw ? vw - rect.width - 8 : position.x;
+    const nx = position.x + rect.width > vw ? vw - rect.width - 8 : position.x;
     const ny =
       position.y + rect.height > vh
         ? Math.max(8, position.y - rect.height)
@@ -186,36 +185,85 @@ export function SpreadsheetContextMenuPortal({
       )}
       style={{ left: adjusted.x, top: adjusted.y }}
     >
-      <MenuItem icon={ClipboardCopy} label="Copy" shortcut="⌘C" onClick={() => exec(CMD.COPY)} />
-      <MenuItem icon={Scissors} label="Cut" shortcut="⌘X" onClick={() => exec(CMD.CUT)} />
-      <MenuItem icon={ClipboardPaste} label="Paste" shortcut="⌘V" onClick={() => exec(CMD.PASTE)} />
+      <MenuItem
+        icon={ClipboardCopy}
+        label="Copy"
+        shortcut="⌘C"
+        onClick={() => exec(CMD.COPY)}
+      />
+      <MenuItem
+        icon={Scissors}
+        label="Cut"
+        shortcut="⌘X"
+        onClick={() => exec(CMD.CUT)}
+      />
+      <MenuItem
+        icon={ClipboardPaste}
+        label="Paste"
+        shortcut="⌘V"
+        onClick={() => exec(CMD.PASTE)}
+      />
 
       <MenuSeparator />
 
       <SubMenu icon={Rows3} label="Insert rows">
-        <MenuItem label="Row above" onClick={() => exec(CMD.INSERT_ROW_BEFORE)} />
-        <MenuItem label="Row below" onClick={() => exec(CMD.INSERT_ROW_AFTER)} />
+        <MenuItem
+          label="Row above"
+          onClick={() => exec(CMD.INSERT_ROW_BEFORE)}
+        />
+        <MenuItem
+          label="Row below"
+          onClick={() => exec(CMD.INSERT_ROW_AFTER)}
+        />
       </SubMenu>
       <SubMenu icon={Columns3} label="Insert columns">
-        <MenuItem label="Column left" onClick={() => exec(CMD.INSERT_COL_BEFORE)} />
-        <MenuItem label="Column right" onClick={() => exec(CMD.INSERT_COL_AFTER)} />
+        <MenuItem
+          label="Column left"
+          onClick={() => exec(CMD.INSERT_COL_BEFORE)}
+        />
+        <MenuItem
+          label="Column right"
+          onClick={() => exec(CMD.INSERT_COL_AFTER)}
+        />
       </SubMenu>
 
       <MenuSeparator />
 
-      <MenuItem icon={Trash2} label="Delete row" onClick={() => exec(CMD.REMOVE_ROW)} />
-      <MenuItem icon={Trash2} label="Delete column" onClick={() => exec(CMD.REMOVE_COL)} />
+      <MenuItem
+        icon={Trash2}
+        label="Delete row"
+        onClick={() => exec(CMD.REMOVE_ROW)}
+      />
+      <MenuItem
+        icon={Trash2}
+        label="Delete column"
+        onClick={() => exec(CMD.REMOVE_COL)}
+      />
 
       <MenuSeparator />
 
-      <MenuItem icon={Combine} label="Merge cells" onClick={() => exec(CMD.MERGE_ALL)} />
-      <MenuItem icon={Split} label="Unmerge cells" onClick={() => exec(CMD.UNMERGE)} />
+      <MenuItem
+        icon={Combine}
+        label="Merge cells"
+        onClick={() => exec(CMD.MERGE_ALL)}
+      />
+      <MenuItem
+        icon={Split}
+        label="Unmerge cells"
+        onClick={() => exec(CMD.UNMERGE)}
+      />
 
       <MenuSeparator />
 
       <SubMenu icon={Eraser} label="Clear">
-        <MenuItem label="Clear content" onClick={() => exec(CMD.CLEAR_CONTENT)} />
-        <MenuItem label="Clear formatting" onClick={() => exec(CMD.CLEAR_FORMAT)} />
+        <MenuItem
+          label="Clear content"
+          onClick={() => exec(CMD.CLEAR_CONTENT)}
+        />
+        <MenuItem
+          label="Clear formatting"
+          onClick={() => exec(CMD.CLEAR_FORMAT)}
+        />
         <MenuSeparator />
         <MenuItem label="Clear all" onClick={() => exec(CMD.CLEAR_ALL)} />
       </SubMenu>
