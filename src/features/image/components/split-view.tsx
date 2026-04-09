@@ -103,6 +103,7 @@ export function SplitView({
       onPointerUp={handlePointerUp}
     >
       {/* Before (original) — full area, clipped from right */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={originalUrl}
         alt="Original"
@@ -113,6 +114,7 @@ export function SplitView({
 
       {/* After (processed) — full area, clipped from left */}
       {processedUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={processedUrl}
           alt="Processed"

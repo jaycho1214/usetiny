@@ -1,14 +1,7 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import dynamic from "next/dynamic";
-import { FullscreenLoading } from "@/components/fullscreen-loading";
 import type { Metadata } from "next";
 import { qrTypes, type QRType } from "@/features/qr-generator/utils";
-
-const QRGeneratorContent = dynamic(
-  () => import("@/features/qr-generator/components/qr-generator-content"),
-  { ssr: false },
-);
+import { QRGeneratorDynamic } from "./qr-generator-dynamic";
 
 const typeMeta: Record<
   string,
@@ -125,9 +118,7 @@ export default async function QRPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Suspense fallback={<FullscreenLoading />}>
-        <QRGeneratorContent initialType={qrType} />
-      </Suspense>
+      <QRGeneratorDynamic initialType={qrType} />
     </>
   );
 }

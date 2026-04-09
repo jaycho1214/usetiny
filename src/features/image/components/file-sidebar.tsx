@@ -114,6 +114,7 @@ export function FileSidebar({
                 {/* Thumbnail */}
                 <div className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded border bg-muted">
                   {file.thumbnailUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={file.thumbnailUrl}
                       alt=""
