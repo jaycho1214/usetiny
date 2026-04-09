@@ -144,8 +144,12 @@ export function CommandPalette() {
           </div>
           <CommandList>
             {noResults ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                Tool not available yet.
+              <div className="flex items-center justify-center gap-1.5 py-6 text-center text-sm text-muted-foreground">
+                Tool not available yet. Press
+                <kbd className="inline-flex size-4 items-center justify-center rounded border bg-muted">
+                  <CornerDownLeft className="size-2.5" />
+                </kbd>
+                to request.
               </div>
             ) : (
               <CommandGroup>
