@@ -2,6 +2,7 @@ import {
   FileDown,
   FileText,
   ImageDown,
+  LetterText,
   NotepadText,
   QrCode,
   Sheet,
@@ -51,5 +52,11 @@ export const allTools: Tool[] = [
     description: "Compress, resize, and convert images instantly",
     icon: ImageDown,
     href: "/image",
+  },
+  {
+    name: "Word Counter",
+    description: "Count words, characters, sentences, and reading time",
+    icon: LetterText,
+    href: "/word-counter",
   },
 ];
