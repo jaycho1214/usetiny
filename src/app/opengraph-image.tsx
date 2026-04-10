@@ -13,8 +13,8 @@ export default function Image() {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
         justifyContent: "center",
+        padding: "72px 80px",
         backgroundColor: "#0a0a0b",
         color: "#fafafa",
         fontFamily: "system-ui, sans-serif",
@@ -22,21 +22,26 @@ export default function Image() {
     >
       <div
         style={{
-          fontSize: 80,
-          fontWeight: 700,
-          letterSpacing: "-0.04em",
+          fontSize: 120,
+          fontWeight: 800,
+          letterSpacing: "-0.05em",
+          lineHeight: 1,
         }}
       >
         UseTiny
       </div>
       <div
         style={{
-          fontSize: 24,
-          color: "#71717a",
-          marginTop: 16,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          marginTop: 24,
         }}
       >
-        Small tools that do one thing well.
+        <div style={{ fontSize: 22, color: "#71717a" }}>
+          Small tools that do one thing well.
+        </div>
+        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
       </div>
     </div>,
     { ...size },
