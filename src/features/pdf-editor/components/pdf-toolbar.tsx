@@ -246,11 +246,11 @@ export function PDFToolbar({
         value={isFillMode ? "fill" : "edit"}
         onValueChange={handleModeChange}
       >
-        <TabsList className="h-7 p-0.5">
-          <TabsTrigger value="edit" className="h-6 px-2.5 text-xs">
+        <TabsList className="p-0.5">
+          <TabsTrigger value="edit" className="px-2.5 text-xs">
             Edit
           </TabsTrigger>
-          <TabsTrigger value="fill" className="h-6 px-2.5 text-xs">
+          <TabsTrigger value="fill" className="px-2.5 text-xs">
             Fill
           </TabsTrigger>
         </TabsList>
