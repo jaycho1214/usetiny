@@ -4,6 +4,7 @@ import { RefObject } from "react";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TabTitleInputProps {
   tabId: string;
@@ -15,6 +16,7 @@ interface TabTitleInputProps {
   textareaRef: RefObject<HTMLTextAreaElement | null>;
   onTitleChange: (tabId: string, title: string) => void;
   onDelete: (tabId: string) => void;
+  variant?: "compact" | "sidebar";
 }
 
 export function TabTitleInput({
@@ -27,7 +29,9 @@ export function TabTitleInput({
   textareaRef,
   onTitleChange,
   onDelete,
+  variant = "compact",
 }: TabTitleInputProps) {
+  const isSidebar = variant === "sidebar";
   return (
     <>
       <input
@@ -45,12 +49,20 @@ export function TabTitleInput({
             textareaRef.current?.focus();
           }
         }}
-        className="bg-transparent outline-none w-24 text-sm"
+        className={cn(
+          "bg-transparent outline-none text-sm",
+          isSidebar ? "flex-1 min-w-0" : "w-24",
+        )}
         placeholder="Untitled"
       />
       {index < 9 && (
-        <Kbd className="text-[10px] px-1 py-0">
-          {isMac ? "⌘" : "Ctrl+"}
+        <Kbd
+          className={cn(
+            "text-[10px] px-1 py-0",
+            isSidebar && "shrink-0 opacity-50",
+          )}
+        >
+          {isMac ? "⌘" : isSidebar ? "^" : "Ctrl+"}
           {index + 1}
         </Kbd>
       )}
@@ -61,7 +73,12 @@ export function TabTitleInput({
           e.stopPropagation();
           onDelete(tabId);
         }}
-        className="h-4 w-4 p-0 -mr-1 hover:bg-destructive/20"
+        className={cn(
+          "p-0 hover:bg-destructive/20",
+          isSidebar
+            ? "h-5 w-5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            : "h-4 w-4 -mr-1",
+        )}
       >
         <X className="h-3 w-3" />
       </Button>

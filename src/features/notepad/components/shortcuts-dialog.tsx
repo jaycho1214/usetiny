@@ -31,6 +31,10 @@ export function ShortcutsDialog({
           description: "Create new tab",
         },
         {
+          keys: [modKey, "Shift", "⌫"],
+          description: "Delete current tab",
+        },
+        {
           keys: [modKey, "1-9"],
           description: "Switch to tab 1-9",
         },
@@ -53,7 +57,19 @@ export function ShortcutsDialog({
         },
         {
           keys: ["F2"],
-          description: "Focus tab title",
+          description: "Rename tab",
+        },
+        {
+          keys: ["Esc"],
+          description: "Unfocus",
+        },
+        {
+          keys: ["↑", "↓"],
+          description: "Navigate tabs",
+        },
+        {
+          keys: ["?"],
+          description: "Show shortcuts",
         },
       ],
     },
