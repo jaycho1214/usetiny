@@ -24,6 +24,8 @@ import { toast } from "sonner";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { exportPdf } from "../export-pdf";
 
+const MAX_CONTENT_LENGTH = 1_000_000;
+
 export default function MarkdownContent() {
   const content = useMarkdownStore((s) => s.content);
   const viewMode = useMarkdownStore((s) => s.viewMode);
@@ -36,19 +38,21 @@ export default function MarkdownContent() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const handleExport = useCallback(async () => {
-    const el = previewRef.current?.querySelector(".md-preview") as HTMLElement;
-    if (!el) {
+    if (!content.trim()) {
       toast.error("Nothing to export");
       return;
     }
     try {
-      await exportPdf(el, exportSettings);
-    } catch {
-      toast.error("Export failed");
+      await exportPdf(content, exportSettings.filename);
+    } catch (err) {
+      console.error("[markdown export] failed:", err);
+      const message = err instanceof Error ? err.message : "Export failed";
+      toast.error(`Export failed: ${message}`);
     }
-  }, [exportSettings]);
+  }, [content, exportSettings.filename]);
 
   const handleGlobalPaste = useCallback(
     (text: string) => {
@@ -57,6 +61,49 @@ export default function MarkdownContent() {
     },
     [updateContent, setViewMode],
   );
+
+  const handleFileDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDraggingOver(false);
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const name = file.name.toLowerCase();
+      const isMarkdown =
+        name.endsWith(".md") ||
+        name.endsWith(".markdown") ||
+        name.endsWith(".mdx") ||
+        name.endsWith(".txt") ||
+        file.type.startsWith("text/");
+      if (!isMarkdown) {
+        toast.error("Only Markdown or text files are supported");
+        return;
+      }
+      try {
+        const text = await file.text();
+        if (text.length > MAX_CONTENT_LENGTH) {
+          toast.error("File too large (1MB limit)");
+          return;
+        }
+        updateContent(text);
+        setViewMode("preview");
+        toast.success(`Loaded ${file.name}`);
+      } catch {
+        toast.error("Failed to read file");
+      }
+    },
+    [updateContent, setViewMode],
+  );
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes("Files")) return;
+    e.preventDefault();
+    setIsDraggingOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    if (e.currentTarget === e.target) setIsDraggingOver(false);
+  }, []);
 
   useKeyboardShortcuts({
     textareaRef,
@@ -80,8 +127,21 @@ export default function MarkdownContent() {
   const showPreview = viewMode === "preview" || viewMode === "split";
 
   return (
-    <div className="md-print-root h-dvh flex flex-col">
+    <div
+      className="md-print-root h-dvh flex flex-col"
+      onDrop={handleFileDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+    >
       <PrintStyles settings={exportSettings} />
+
+      {isDraggingOver && (
+        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm print:hidden">
+          <div className="rounded-lg border-2 border-dashed border-foreground/30 px-8 py-4 text-sm text-muted-foreground">
+            Drop a Markdown file to open
+          </div>
+        </div>
+      )}
 
       {/* Navbar */}
       <div className="bg-background px-4 py-2 flex items-center gap-2 print:hidden">
@@ -176,7 +236,7 @@ export default function MarkdownContent() {
         >
           {isEmpty && (
             <p className="text-sm text-muted-foreground/50 px-6 pt-6 leading-relaxed select-none">
-              Paste or type Markdown here.
+              Paste, type, or drop a .md file here.
               <br />
               {isMac ? "⌘" : "Ctrl+"}⇧E to export as PDF.
             </p>
@@ -186,7 +246,7 @@ export default function MarkdownContent() {
             value={content}
             onChange={(e) => {
               const newValue = e.target.value;
-              if (newValue.length <= 1000000) {
+              if (newValue.length <= MAX_CONTENT_LENGTH) {
                 updateContent(newValue);
               } else {
                 toast.error("Content limit reached (1MB)");

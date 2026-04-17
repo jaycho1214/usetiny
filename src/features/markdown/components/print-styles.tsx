@@ -19,23 +19,44 @@ const marginMap: Record<Margins, string> = {
   wide: "3.81cm",
 };
 
+function cssString(s: string) {
+  return JSON.stringify(s.replace(/[\u0000-\u001F\u007F]/g, ""));
+}
+
 export const PrintStyles = memo(function PrintStyles({
   settings,
 }: PrintStylesProps) {
   const size = pageSizeMap[settings.pageSize];
   const orientation = settings.orientation;
   const margin = marginMap[settings.margins];
-  const marginBottom = settings.pageNumbers ? "2cm" : margin;
+
+  const headerContent = settings.headerFooter
+    ? `@top-center {
+        content: ${cssString(settings.filename || "document")};
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 8.5pt;
+        color: #999;
+      }`
+    : "";
+
+  const pageNumberContent = settings.pageNumbers
+    ? `@bottom-center {
+        content: counter(page) " / " counter(pages);
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 8.5pt;
+        color: #999;
+      }`
+    : "";
 
   const css = `
 @media print {
   @page {
     size: ${size} ${orientation};
     margin: ${margin};
-    margin-bottom: ${marginBottom};
+    ${headerContent}
+    ${pageNumberContent}
   }
 
-  /* Reset layout containers for print flow */
   html, body {
     height: auto !important;
     overflow: visible !important;
@@ -59,10 +80,6 @@ export const PrintStyles = memo(function PrintStyles({
     overflow: visible !important;
   }
 
-  /* ===================== */
-  /*   Beautiful PDF Base  */
-  /* ===================== */
-
   .md-preview {
     display: block !important;
     padding: 0 !important;
@@ -76,7 +93,6 @@ export const PrintStyles = memo(function PrintStyles({
     print-color-adjust: exact !important;
   }
 
-  /* Headings — clean hierarchy */
   .md-preview h1 {
     font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
     font-size: 24pt !important;
@@ -123,7 +139,6 @@ export const PrintStyles = memo(function PrintStyles({
     line-height: 1.4 !important;
   }
 
-  /* Paragraphs */
   .md-preview p {
     margin-top: 0 !important;
     margin-bottom: 8pt !important;
@@ -131,14 +146,12 @@ export const PrintStyles = memo(function PrintStyles({
     widows: 3 !important;
   }
 
-  /* Links — subtle in print */
   .md-preview a {
     color: #1a1a1a !important;
     text-decoration: underline !important;
     text-underline-offset: 2pt !important;
   }
 
-  /* Strong and emphasis */
   .md-preview strong {
     font-weight: 700 !important;
     color: #0a0a0a !important;
@@ -148,7 +161,6 @@ export const PrintStyles = memo(function PrintStyles({
     font-style: italic !important;
   }
 
-  /* Code — inline */
   .md-preview code:not(pre code) {
     font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", "Courier New", monospace !important;
     font-size: 9.5pt !important;
@@ -159,7 +171,6 @@ export const PrintStyles = memo(function PrintStyles({
     color: #1a1a1a !important;
   }
 
-  /* Code blocks */
   .md-preview pre {
     font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", "Courier New", monospace !important;
     font-size: 9pt !important;
@@ -185,7 +196,6 @@ export const PrintStyles = memo(function PrintStyles({
     color: #1a1a1a !important;
   }
 
-  /* Syntax highlighting — subtle grayscale for print */
   .md-preview .hljs-keyword,
   .md-preview .hljs-selector-tag,
   .md-preview .hljs-built_in { color: #333 !important; font-weight: 600 !important; }
@@ -200,7 +210,6 @@ export const PrintStyles = memo(function PrintStyles({
   .md-preview .hljs-type,
   .md-preview .hljs-class { color: #333 !important; }
 
-  /* Blockquotes — elegant left border */
   .md-preview blockquote {
     margin: 8pt 0 12pt 0 !important;
     padding: 6pt 0 6pt 14pt !important;
@@ -214,7 +223,6 @@ export const PrintStyles = memo(function PrintStyles({
     margin-bottom: 4pt !important;
   }
 
-  /* Lists */
   .md-preview ul,
   .md-preview ol {
     margin-top: 4pt !important;
@@ -232,14 +240,12 @@ export const PrintStyles = memo(function PrintStyles({
     margin-bottom: 2pt !important;
   }
 
-  /* Task lists */
   .md-preview input[type="checkbox"] {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     margin-right: 6pt !important;
   }
 
-  /* Tables — clean lines */
   .md-preview table {
     width: 100% !important;
     border-collapse: collapse !important;
@@ -275,14 +281,12 @@ export const PrintStyles = memo(function PrintStyles({
     border-bottom: 1pt solid #ccc !important;
   }
 
-  /* Horizontal rule */
   .md-preview hr {
     border: none !important;
     border-top: 1pt solid #e5e5e5 !important;
     margin: 18pt 0 !important;
   }
 
-  /* Images */
   .md-preview img {
     max-width: 100% !important;
     height: auto !important;
@@ -290,7 +294,6 @@ export const PrintStyles = memo(function PrintStyles({
     page-break-inside: avoid !important;
   }
 
-  /* Page break control */
   .md-preview h1,
   .md-preview h2,
   .md-preview h3 {
@@ -298,7 +301,6 @@ export const PrintStyles = memo(function PrintStyles({
     page-break-after: avoid !important;
   }
 
-  /* Math (KaTeX) — beautiful print rendering */
   .md-preview .katex {
     font-size: 1.05em !important;
     color: #1a1a1a !important;
@@ -313,62 +315,6 @@ export const PrintStyles = memo(function PrintStyles({
 
   .md-preview .katex-display > .katex {
     font-size: 1.1em !important;
-  }
-
-  .md-preview .katex .mord,
-  .md-preview .katex .mbin,
-  .md-preview .katex .mrel,
-  .md-preview .katex .mopen,
-  .md-preview .katex .mclose,
-  .md-preview .katex .mpunct,
-  .md-preview .katex .minner {
-    color: #1a1a1a !important;
-  }
-
-  /* Page numbers */
-  ${
-    settings.pageNumbers
-      ? `.md-page-footer {
-    display: block !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: system-ui, -apple-system, sans-serif !important;
-    font-size: 8.5pt !important;
-    color: #999 !important;
-    padding-bottom: 0.5cm;
-  }`
-      : `.md-page-footer { display: none !important; }`
-  }
-
-  /* Header/Footer */
-  ${
-    settings.headerFooter
-      ? `.md-page-header {
-    display: block !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    text-align: left;
-    font-family: system-ui, -apple-system, sans-serif !important;
-    font-size: 8pt !important;
-    color: #bbb !important;
-    padding-top: 0.3cm;
-    border-bottom: 0.5pt solid #eee !important;
-    padding-bottom: 4pt;
-  }`
-      : `.md-page-header { display: none !important; }`
-  }
-}
-
-/* Screen-only: hide print helpers */
-@media screen {
-  .md-page-footer,
-  .md-page-header {
-    display: none !important;
   }
 }
 `;

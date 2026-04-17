@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import { useMarkdownStore } from "../store";
 import type { PageSize, Orientation, Margins } from "../store";
+import { extractTitle } from "../export-pdf";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
@@ -10,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Settings2 } from "lucide-react";
 import {
   Tooltip,
@@ -35,7 +38,8 @@ const margins: { value: Margins; label: string }[] = [
 ];
 
 export function ExportSettings() {
-  const { exportSettings, updateExportSettings } = useMarkdownStore();
+  const { exportSettings, updateExportSettings, content } = useMarkdownStore();
+  const suggestedFilename = useMemo(() => extractTitle(content), [content]);
 
   return (
     <Popover>
@@ -52,6 +56,18 @@ export function ExportSettings() {
       <PopoverContent className="w-64" align="end">
         <div className="space-y-4">
           <h4 className="text-sm font-semibold">Export Settings</h4>
+
+          <div className="space-y-1.5">
+            <label className="text-xs text-muted-foreground">Filename</label>
+            <Input
+              value={exportSettings.filename}
+              onChange={(e) =>
+                updateExportSettings({ filename: e.target.value })
+              }
+              placeholder={suggestedFilename || "document"}
+              className="h-7 text-xs"
+            />
+          </div>
 
           <div className="space-y-1.5">
             <label className="text-xs text-muted-foreground">Page size</label>
