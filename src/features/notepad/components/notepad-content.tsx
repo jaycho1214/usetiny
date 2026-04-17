@@ -35,10 +35,7 @@ export default function NotepadContent() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const prevActiveTabIdRef = useRef<string | null>(activeTabId);
 
-  const toggleShortcuts = useCallback(
-    () => setShowShortcuts((v) => !v),
-    [],
-  );
+  const toggleShortcuts = useCallback(() => setShowShortcuts((v) => !v), []);
 
   const handleDeleteTab = useCallback(
     (id: string) => {
@@ -88,9 +85,7 @@ export default function NotepadContent() {
     () =>
       tabOrder
         .map((id) => tabs[id])
-        .filter(
-          (tab): tab is import("../store").NotepadTab => Boolean(tab),
-        ),
+        .filter((tab): tab is import("../store").NotepadTab => Boolean(tab)),
     [tabOrder, tabs],
   );
   const activeTab = tabs[activeTabId] || orderedTabs[0] || null;

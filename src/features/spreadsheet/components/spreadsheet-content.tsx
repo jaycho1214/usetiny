@@ -155,7 +155,6 @@ export default function SpreadsheetContent() {
       }
     };
     // Only run once on mount
-     
   }, [rehydrated]);
 
   // Custom context menu via native capture listener

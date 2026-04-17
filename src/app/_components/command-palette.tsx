@@ -28,8 +28,7 @@ import { toast } from "sonner";
 import { allTools } from "@/lib/tools";
 
 const SURVEY_ID = "019d7073-2cb6-0000-7914-626198509c6b";
-const RESPONSE_KEY =
-  "$survey_response_948e0419-c1dc-4b8f-9bbc-b227c2ebe21f";
+const RESPONSE_KEY = "$survey_response_948e0419-c1dc-4b8f-9bbc-b227c2ebe21f";
 
 function getPostHog() {
   return import("posthog-js").then((m) => m.default);
@@ -53,23 +52,20 @@ export function CommandPalette() {
 
   const noResults = filteredTools.length === 0 && search.length > 0;
 
-  const submitRequest = useCallback(
-    async (query: string) => {
-      setCommandOpen(false);
-      try {
-        const ph = await getPostHog();
-        ph.capture(
-          "survey sent",
-          { $survey_id: SURVEY_ID, [RESPONSE_KEY]: query },
-          { send_instantly: true },
-        );
-        toast.success("Request submitted — thanks!");
-      } catch {
-        toast.error("Failed to submit request. Please try again.");
-      }
-    },
-    [],
-  );
+  const submitRequest = useCallback(async (query: string) => {
+    setCommandOpen(false);
+    try {
+      const ph = await getPostHog();
+      ph.capture(
+        "survey sent",
+        { $survey_id: SURVEY_ID, [RESPONSE_KEY]: query },
+        { send_instantly: true },
+      );
+      toast.success("Request submitted — thanks!");
+    } catch {
+      toast.error("Failed to submit request. Please try again.");
+    }
+  }, []);
 
   useEffect(() => {
     if (noResults) {
