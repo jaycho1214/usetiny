@@ -151,5 +151,20 @@ When adding a new tool, complete all of the following:
 1. Add the route to `sitemap.ts`
 2. Export `metadata` with `title`, `description`, `keywords`, and `alternates.canonical`
 3. Add `WebApplication` JSON-LD with `price: "0"` and relevant `featureList`
-4. Add the tool to the homepage tool list (both in `page.tsx` and `_components/command-palette.tsx`)
+4. Add the tool to `src/lib/tools.ts` with `addedAt: "YYYY-MM-DD"` (today). The homepage tool list and command palette pull from this array — no other registration needed.
 5. Create `opengraph-image.tsx` in the route directory following the design rules above — use a composition that differs from existing tool images
+
+## "N NEW" badge
+
+The home page's **More tools** button shows an inverted-pill `N new` badge counting tools whose `addedAt` is newer than the user's last command-palette open. Mechanism lives in:
+
+- `src/lib/tools.ts` — `Tool.addedAt` field; new tools added to this array automatically become "new" for every existing user.
+- `src/lib/new-tools-ack.ts` — `getSeenAt()` reads, `markAllNewToolsSeen()` writes `Date.now()` to `localStorage["usetiny-new-tools-seen-at"]` and dispatches a synthetic `storage` event so same-tab subscribers update without a reload.
+- `src/app/_components/command-palette.tsx` — calls `markAllNewToolsSeen()` in a `useEffect` watching `commandOpen`, so opening the palette clears every currently-new badge at once.
+- `src/app/_components/tool-list.tsx` — subscribes via `useSyncExternalStore` and filters `allTools` by `Date.parse(t.addedAt) > seenAt && !shown.has(t.href)`.
+
+Operational notes:
+
+- To force-clear the badge globally, remove or bump the `usetiny-new-tools-seen-at` key; there's no server-side state.
+- To change the dismissal trigger (e.g., dismiss on any tool visit instead of palette open), call `markAllNewToolsSeen()` from the new trigger and remove the palette call.
+- The command palette also shows a subtle bottom gradient on its result list as a scroll/more-content affordance. Only rendered when `!noResults && filteredTools.length > 0`.

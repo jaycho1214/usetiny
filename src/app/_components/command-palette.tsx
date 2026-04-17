@@ -26,6 +26,8 @@ import { useRouter } from "next/navigation";
 import { CornerDownLeft } from "lucide-react";
 import { toast } from "sonner";
 import { allTools } from "@/lib/tools";
+import { markAllNewToolsSeen } from "@/lib/new-tools-ack";
+import { cn } from "@/lib/utils";
 
 const SURVEY_ID = "019d7073-2cb6-0000-7914-626198509c6b";
 const RESPONSE_KEY = "$survey_response_948e0419-c1dc-4b8f-9bbc-b227c2ebe21f";
@@ -37,6 +39,9 @@ function getPostHog() {
 export function CommandPalette() {
   const [commandOpen, setCommandOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+  const [listWrapper, setListWrapper] = useState<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -74,6 +79,32 @@ export function CommandPalette() {
       );
     }
   }, [noResults]);
+
+  useEffect(() => {
+    if (commandOpen) markAllNewToolsSeen();
+  }, [commandOpen]);
+
+  useEffect(() => {
+    if (!listWrapper) return;
+    const el = listWrapper.querySelector<HTMLDivElement>(
+      '[data-slot="command-list"]',
+    );
+    if (!el) return;
+    const update = () => {
+      const atTop = el.scrollTop <= 0;
+      const atBottom = el.scrollHeight - el.clientHeight - el.scrollTop <= 1;
+      setCanScrollUp(!atTop);
+      setCanScrollDown(!atBottom);
+    };
+    update();
+    el.addEventListener("scroll", update);
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, [listWrapper, filteredTools.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -138,32 +169,48 @@ export function CommandPalette() {
               </button>
             )}
           </div>
-          <CommandList>
-            {noResults ? (
-              <div className="flex items-center justify-center gap-1.5 py-6 text-center text-sm text-muted-foreground">
-                Tool not available yet. Press
-                <kbd className="inline-flex size-4 items-center justify-center rounded border bg-muted">
-                  <CornerDownLeft className="size-2.5" />
-                </kbd>
-                to request.
-              </div>
-            ) : (
-              <CommandGroup>
-                {filteredTools.map((tool) => (
-                  <CommandItem
-                    key={tool.href}
-                    onSelect={() => {
-                      router.push(tool.href);
-                      setCommandOpen(false);
-                    }}
-                  >
-                    <tool.icon />
-                    <span>{tool.name}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-          </CommandList>
+          <div className="relative" ref={setListWrapper}>
+            <CommandList>
+              {noResults ? (
+                <div className="flex items-center justify-center gap-1.5 py-6 text-center text-sm text-muted-foreground">
+                  Tool not available yet. Press
+                  <kbd className="inline-flex size-4 items-center justify-center rounded border bg-muted">
+                    <CornerDownLeft className="size-2.5" />
+                  </kbd>
+                  to request.
+                </div>
+              ) : (
+                <CommandGroup>
+                  {filteredTools.map((tool) => (
+                    <CommandItem
+                      key={tool.href}
+                      onSelect={() => {
+                        router.push(tool.href);
+                        setCommandOpen(false);
+                      }}
+                    >
+                      <tool.icon />
+                      <span>{tool.name}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+            <div
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-popover via-popover/80 to-transparent transition-opacity duration-300",
+                canScrollUp ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <div
+              aria-hidden
+              className={cn(
+                "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-popover via-popover/80 to-transparent transition-opacity duration-300",
+                canScrollDown ? "opacity-100" : "opacity-0",
+              )}
+            />
+          </div>
         </Command>
       </DialogContent>
     </Dialog>
