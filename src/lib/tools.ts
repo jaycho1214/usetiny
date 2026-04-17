@@ -5,6 +5,7 @@ import {
   LetterText,
   NotepadText,
   QrCode,
+  Repeat,
   Sheet,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -58,5 +59,11 @@ export const allTools: Tool[] = [
     description: "Count words, characters, sentences, and reading time",
     icon: LetterText,
     href: "/word-counter",
+  },
+  {
+    name: "YouTube Looper",
+    description: "A-B loop YouTube videos with speed and keyboard shortcuts",
+    icon: Repeat,
+    href: "/youtube-looper",
   },
 ];
