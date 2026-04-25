@@ -7,6 +7,7 @@ import {
   QrCode,
   Repeat,
   Sheet,
+  Webhook,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -75,5 +76,12 @@ export const allTools: Tool[] = [
     icon: Repeat,
     href: "/youtube-looper",
     addedAt: "2026-04-17",
+  },
+  {
+    name: "Webhook Inspector",
+    description: "Capture and inspect HTTP webhooks at a unique URL",
+    icon: Webhook,
+    href: "/webhook-inspector",
+    addedAt: "2026-04-25",
   },
 ];
