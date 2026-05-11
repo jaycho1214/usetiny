@@ -52,7 +52,8 @@ import { ImageDropzone } from "./image-dropzone";
 import { FileSidebar } from "./file-sidebar";
 import { SplitView } from "./split-view";
 import { CompressionControls } from "./compression-controls";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { imageShortcutSections } from "./shortcuts";
 
 export default function ImageContent() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -754,7 +755,12 @@ export default function ImageContent() {
         </span>
       </div>
 
-      <ShortcutsDialog open={showShortcuts} onOpenChange={setShowShortcuts} />
+      <ShortcutsDialog
+        open={showShortcuts}
+        onOpenChange={setShowShortcuts}
+        sections={imageShortcutSections(isMac)}
+        maxWidth={384}
+      />
 
       <Dialog open={showPresetDialog} onOpenChange={setShowPresetDialog}>
         <DialogContent className="max-w-xs">

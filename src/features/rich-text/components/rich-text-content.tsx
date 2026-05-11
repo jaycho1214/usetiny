@@ -1,7 +1,8 @@
 "use client";
 
 import { useRichTextStore, isEmptyDoc, type RichTextTab } from "../store";
-import { useIsMac, useKeyboardShortcuts } from "./keyboard-shortcuts";
+import { useIsMac } from "@/hooks/use-is-mac";
+import { useTabKeyboardShortcuts } from "@/hooks/use-tab-keyboard-shortcuts";
 import { Editor, type EditorHandle } from "./editor";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
@@ -16,7 +17,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useStoreHydration } from "@/hooks/use-store-hydration";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { richTextShortcutSections } from "./shortcuts";
 import { TabTitleInput } from "./tab-title-input";
 import { EditorStats } from "./editor-stats";
 import { toast } from "sonner";
@@ -60,12 +62,27 @@ export default function RichTextContent() {
     [deleteTab, restoreTab],
   );
 
-  useKeyboardShortcuts(
-    editorRef,
+  const getSnapshot = useCallback(() => {
+    const state = useRichTextStore.getState();
+    const orderedTabs = state.tabOrder
+      .map((id) => state.tabs[id])
+      .filter(Boolean);
+    return {
+      orderedTabs,
+      currentIndex: orderedTabs.findIndex((t) => t.id === state.activeTabId),
+      activeTabId: state.activeTabId,
+    };
+  }, []);
+
+  useTabKeyboardShortcuts({
+    getSnapshot,
+    createTab,
+    setActiveTab,
+    onDeleteTab: handleDeleteTab,
+    onToggleShortcuts: toggleShortcuts,
+    focusSurface: () => editorRef.current?.focus(),
     titleInputRef,
-    toggleShortcuts,
-    handleDeleteTab,
-  );
+  });
   const rehydrated = useStoreHydration(useRichTextStore);
 
   // Auto-delete untouched tabs when switching away
@@ -292,7 +309,9 @@ export default function RichTextContent() {
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
-        isMac={isMac}
+        description="Manage tabs and format text without leaving the keyboard."
+        sections={richTextShortcutSections(isMac)}
+        maxWidth={560}
       />
     </div>
   );

@@ -60,7 +60,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import NextLink from "next/link";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { qrShortcutSections } from "./shortcuts";
 import { QRCode } from "react-qrcode-logo";
 import { toast } from "sonner";
 import {
@@ -559,7 +560,8 @@ export default function QRGeneratorContent({
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
-        isMac={isMac}
+        description="Use these shortcuts to quickly generate and manage QR codes."
+        sections={qrShortcutSections(isMac)}
       />
     </div>
   );

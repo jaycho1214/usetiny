@@ -6,7 +6,8 @@ import { useStoreHydration } from "@/hooks/use-store-hydration";
 import { useIsMac } from "@/hooks/use-is-mac";
 import { useTheme } from "next-themes";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { spreadsheetShortcutSections } from "./shortcuts";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -392,7 +393,8 @@ export default function SpreadsheetContent() {
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
-        isMac={isMac}
+        description="Navigate and edit your spreadsheet efficiently."
+        sections={spreadsheetShortcutSections(isMac)}
       />
     </div>
   );

@@ -15,7 +15,8 @@ import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import Link from "next/link";
 import { useStoreHydration } from "@/hooks/use-store-hydration";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { markdownShortcutSections } from "./shortcuts";
 import { ExportSettings } from "./export-settings";
 import { MarkdownPreview } from "./markdown-preview";
 import { PrintStyles } from "./print-styles";
@@ -288,7 +289,8 @@ export default function MarkdownContent() {
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
-        isMac={isMac}
+        description="Shortcuts for the Markdown editor."
+        sections={markdownShortcutSections(isMac)}
       />
     </div>
   );

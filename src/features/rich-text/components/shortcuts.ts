@@ -1,28 +1,8 @@
-"use client";
+import type { ShortcutSection } from "@/components/shortcuts-dialog";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Kbd, KbdGroup } from "@/components/ui/kbd";
-
-interface ShortcutsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  isMac: boolean;
-}
-
-export function ShortcutsDialog({
-  open,
-  onOpenChange,
-  isMac,
-}: ShortcutsDialogProps) {
+export function richTextShortcutSections(isMac: boolean): ShortcutSection[] {
   const modKey = isMac ? "⌘" : "Ctrl+";
-
-  const shortcuts = [
+  return [
     {
       category: "Tab Management",
       items: [
@@ -68,41 +48,4 @@ export function ShortcutsDialog({
       ],
     },
   ];
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px] max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
-          <DialogDescription>
-            Manage tabs and format text without leaving the keyboard.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-6">
-          {shortcuts.map((section) => (
-            <div key={section.category} className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground">
-                {section.category}
-              </h3>
-              <div className="space-y-2">
-                {section.items.map((shortcut, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-2 border-b last:border-0 gap-3"
-                  >
-                    <span className="text-sm">{shortcut.description}</span>
-                    <KbdGroup>
-                      {shortcut.keys.map((key, keyIndex) => (
-                        <Kbd key={keyIndex}>{key}</Kbd>
-                      ))}
-                    </KbdGroup>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
 }

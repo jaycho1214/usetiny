@@ -34,11 +34,14 @@ import { PDFDropzone } from "./pdf-dropzone";
 import { PDFToolbar } from "./pdf-toolbar";
 import { PDFSidebar } from "./pdf-sidebar";
 import { PDFPageCanvas } from "./pdf-page-canvas";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { pdfEditorShortcutSections } from "./shortcuts";
+import { useIsMac } from "@/hooks/use-is-mac";
 
 export function PDFEditor() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hydrated = useStoreHydration(usePDFEditorStore as any);
+  const isMac = useIsMac();
 
   const pdfData = usePDFEditorStore((s) => s.pdfData);
   const fileName = usePDFEditorStore((s) => s.fileName);
@@ -603,7 +606,12 @@ export function PDFEditor() {
         </div>
       </div>
 
-      <ShortcutsDialog open={showShortcuts} onOpenChange={setShowShortcuts} />
+      <ShortcutsDialog
+        open={showShortcuts}
+        onOpenChange={setShowShortcuts}
+        sections={pdfEditorShortcutSections(isMac)}
+        maxWidth={448}
+      />
 
       <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
         <AlertDialogContent>

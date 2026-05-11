@@ -39,7 +39,8 @@ import { cn } from "@/lib/utils";
 import { useYoutubeLooperStore, type SavedLoop } from "../store";
 import { extractVideoId, formatTime, nextRate, PLAYBACK_RATES } from "../utils";
 import { loadYouTubeAPI, YT_STATE, type YTPlayer } from "../youtube-iframe";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { youtubeLooperShortcutSections } from "./shortcuts";
 
 const PLAYER_DOM_ID = "youtube-looper-player";
 const LOOP_END_EPSILON = 0.05;
@@ -920,7 +921,13 @@ export default function YoutubeLooperContent() {
         </aside>
       </div>
 
-      <ShortcutsDialog open={showShortcuts} onOpenChange={setShowShortcuts} />
+      <ShortcutsDialog
+        open={showShortcuts}
+        onOpenChange={setShowShortcuts}
+        description="Available shortcuts for YouTube Looper."
+        sections={youtubeLooperShortcutSections}
+        maxWidth={440}
+      />
     </div>
   );
 }

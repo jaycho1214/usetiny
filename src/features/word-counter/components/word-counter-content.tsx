@@ -2,7 +2,8 @@
 
 import { useWordCounterStore } from "../store";
 import { useKeyboardShortcuts } from "./keyboard-shortcuts";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { wordCounterShortcutSections } from "./shortcuts";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Keyboard } from "lucide-react";
@@ -242,7 +243,13 @@ export default function WordCounterContent() {
         <span className="opacity-60">Saved</span>
       </div>
 
-      <ShortcutsDialog open={showShortcuts} onOpenChange={setShowShortcuts} />
+      <ShortcutsDialog
+        open={showShortcuts}
+        onOpenChange={setShowShortcuts}
+        description="Available keyboard shortcuts for Word Counter."
+        sections={wordCounterShortcutSections}
+        maxWidth={400}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useNotepadStore } from "../store";
-import { useIsMac, useKeyboardShortcuts } from "./keyboard-shortcuts";
+import { useIsMac } from "@/hooks/use-is-mac";
+import { useTabKeyboardShortcuts } from "@/hooks/use-tab-keyboard-shortcuts";
 import { Button } from "@/components/ui/button";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { Keyboard, Plus } from "lucide-react";
@@ -15,7 +16,8 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useStoreHydration } from "@/hooks/use-store-hydration";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
-import { ShortcutsDialog } from "./shortcuts-dialog";
+import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { notepadShortcutSections } from "./shortcuts";
 import { TabTitleInput } from "./tab-title-input";
 import { toast } from "sonner";
 
@@ -58,12 +60,27 @@ export default function NotepadContent() {
     [deleteTab, restoreTab],
   );
 
-  useKeyboardShortcuts(
-    textareaRef,
+  const getSnapshot = useCallback(() => {
+    const state = useNotepadStore.getState();
+    const orderedTabs = state.tabOrder
+      .map((id) => state.tabs[id])
+      .filter(Boolean);
+    return {
+      orderedTabs,
+      currentIndex: orderedTabs.findIndex((t) => t.id === state.activeTabId),
+      activeTabId: state.activeTabId,
+    };
+  }, []);
+
+  useTabKeyboardShortcuts({
+    getSnapshot,
+    createTab,
+    setActiveTab,
+    onDeleteTab: handleDeleteTab,
+    onToggleShortcuts: toggleShortcuts,
+    focusSurface: () => textareaRef.current?.focus(),
     titleInputRef,
-    toggleShortcuts,
-    handleDeleteTab,
-  );
+  });
   const rehydrated = useStoreHydration(useNotepadStore);
 
   // Auto-delete untouched tabs when switching
@@ -300,7 +317,8 @@ export default function NotepadContent() {
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
-        isMac={isMac}
+        description="Use these shortcuts to navigate and manage your notepad efficiently."
+        sections={notepadShortcutSections(isMac)}
       />
     </div>
   );
