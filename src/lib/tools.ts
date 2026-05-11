@@ -4,6 +4,7 @@ import {
   ImageDown,
   LetterText,
   NotepadText,
+  Pilcrow,
   QrCode,
   Repeat,
   Sheet,
@@ -83,5 +84,12 @@ export const allTools: Tool[] = [
     icon: Webhook,
     href: "/webhook-inspector",
     addedAt: "2026-04-25",
+  },
+  {
+    name: "Rich Text",
+    description: "Rich-text editor with tabs, headings, lists, and formatting",
+    icon: Pilcrow,
+    href: "/rich-text",
+    addedAt: "2026-05-11",
   },
 ];

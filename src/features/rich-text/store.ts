@@ -1,37 +1,53 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
+import type { JSONContent } from "@tiptap/react";
 import { computeTabOrder } from "@/lib/tab-order";
 
-export interface NotepadTab {
+export interface RichTextTab {
   id: string;
   title: string;
-  content: string;
+  content: JSONContent | null;
   lastEditedAt: number;
 }
 
-interface NotepadStore {
-  tabs: Record<string, NotepadTab>;
+interface RichTextStore {
+  tabs: Record<string, RichTextTab>;
   tabOrder: string[];
   activeTabId: string;
   createTab: () => void;
   deleteTab: (id: string) => void;
-  restoreTab: (tab: NotepadTab) => void;
+  restoreTab: (tab: RichTextTab) => void;
   updateTab: (
     id: string,
-    updates: Partial<Omit<NotepadTab, "lastEditedAt">>,
+    updates: Partial<Omit<RichTextTab, "lastEditedAt">>,
   ) => void;
   setActiveTab: (id: string) => void;
 }
 
-const initialTab = {
+const initialTab: RichTextTab = {
   id: nanoid(),
   title: "Untitled",
-  content: "",
+  content: null,
   lastEditedAt: Date.now(),
 };
 
-export const useNotepadStore = create<NotepadStore>()(
+export function isEmptyDoc(doc: JSONContent | null): boolean {
+  if (!doc) return true;
+  if (!doc.content || doc.content.length === 0) return true;
+  if (doc.content.length === 1) {
+    const only = doc.content[0];
+    if (
+      only.type === "paragraph" &&
+      (!only.content || only.content.length === 0)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export const useRichTextStore = create<RichTextStore>()(
   persist(
     (set, get) => ({
       tabs: {
@@ -41,15 +57,14 @@ export const useNotepadStore = create<NotepadStore>()(
       activeTabId: initialTab.id,
       createTab: () => {
         const state = get();
-        // Limit to 50 tabs to prevent abuse and localStorage exhaustion
         if (Object.keys(state.tabs).length >= 50) {
           return;
         }
         const newId = nanoid();
-        const newTab = {
+        const newTab: RichTextTab = {
           id: newId,
           title: "Untitled",
-          content: "",
+          content: null,
           lastEditedAt: Date.now(),
         };
         const newTabs = { ...state.tabs, [newId]: newTab };
@@ -63,12 +78,11 @@ export const useNotepadStore = create<NotepadStore>()(
         const state = get();
         const tabIds = Object.keys(state.tabs);
 
-        // If this is the last tab, reset it instead of deleting
         if (tabIds.length === 1) {
-          const resetTab = {
+          const resetTab: RichTextTab = {
             ...state.tabs[id],
             title: "Untitled",
-            content: "",
+            content: null,
             lastEditedAt: Date.now(),
           };
           const newTabs = { [id]: resetTab };
@@ -84,7 +98,6 @@ export const useNotepadStore = create<NotepadStore>()(
         const { [id]: _removed, ...remainingTabs } = state.tabs;
         const remainingIds = Object.keys(remainingTabs);
 
-        // Set new active tab if we're deleting the active one
         const newActiveId =
           state.activeTabId === id ? remainingIds[0] : state.activeTabId;
 
@@ -120,14 +133,13 @@ export const useNotepadStore = create<NotepadStore>()(
       },
       setActiveTab: (id) => {
         const state = get();
-        // Only set if the tab exists
         if (state.tabs[id]) {
           set({ activeTabId: id });
         }
       },
     }),
     {
-      name: "notepad-storage",
+      name: "rich-text-storage",
       version: 1,
       skipHydration: true,
     },
