@@ -8,7 +8,7 @@ export default function Image() {
   return renderOgImage({
     tagline: "Real formulas. Disposable sheets.",
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div
           style={{
             display: "flex",
@@ -55,7 +55,7 @@ export default function Image() {
             .
           </div>
         </div>
-      </>
+      </div>
     ),
   });
 }

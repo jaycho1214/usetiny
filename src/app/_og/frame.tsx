@@ -7,7 +7,7 @@ export const OG_CONTENT_TYPE = "image/png" as const;
 
 type RenderOgImageProps = {
   tagline: string;
-  children: ReactElement | ReactElement[];
+  children: ReactElement;
   taglineMarginTop?: number;
 };
 

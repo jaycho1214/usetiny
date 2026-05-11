@@ -16,7 +16,7 @@ export default function Image() {
     tagline: "Test webhooks. Without the curl.",
     taglineMarginTop: 36,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
             style={{
@@ -79,7 +79,7 @@ export default function Image() {
           <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Inspector</div>
           <div style={{ ...WORDMARK_STYLE, color: "#06b6d4" }}>.</div>
         </div>
-      </>
+      </div>
     ),
   });
 }

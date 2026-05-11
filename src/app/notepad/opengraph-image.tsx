@@ -11,7 +11,7 @@ export default function Image() {
     tagline: "Quick notes. Saved without asking.",
     taglineMarginTop: 40,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {TABS.map((label, i) => (
             <div
@@ -67,7 +67,7 @@ export default function Image() {
             .
           </div>
         </div>
-      </>
+      </div>
     ),
   });
 }

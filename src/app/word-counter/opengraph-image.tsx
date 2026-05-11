@@ -16,7 +16,7 @@ export default function Image() {
     tagline: "Words, characters, time to read.",
     taglineMarginTop: 36,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div
           style={{
             display: "flex",
@@ -46,7 +46,7 @@ export default function Image() {
           <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Counter</div>
           <div style={{ ...WORDMARK_STYLE, color: "#3b82f6" }}>.</div>
         </div>
-      </>
+      </div>
     ),
   });
 }

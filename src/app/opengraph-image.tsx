@@ -22,7 +22,7 @@ export default function Image() {
     tagline: "Tiny tools. No sign-up. No tracking.",
     taglineMarginTop: 40,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "baseline" }}>
           <div
             style={{
@@ -61,7 +61,7 @@ export default function Image() {
             />
           ))}
         </div>
-      </>
+      </div>
     ),
   });
 }

@@ -16,7 +16,7 @@ export default function Image() {
     tagline: "Loop A to B. Until you nail it.",
     taglineMarginTop: 40,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div
           style={{
             display: "flex",
@@ -75,7 +75,7 @@ export default function Image() {
           <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Looper</div>
           <div style={{ ...WORDMARK_STYLE, color: "#ef4444" }}>.</div>
         </div>
-      </>
+      </div>
     ),
   });
 }

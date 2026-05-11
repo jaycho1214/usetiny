@@ -16,7 +16,7 @@ export default function Image() {
     tagline: "Smaller files. Same sharp image.",
     taglineMarginTop: 36,
     children: (
-      <>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <div
             style={{
@@ -57,7 +57,7 @@ export default function Image() {
           <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Compressor</div>
           <div style={{ ...WORDMARK_STYLE, color: "#f97316" }}>.</div>
         </div>
-      </>
+      </div>
     ),
   });
 }
