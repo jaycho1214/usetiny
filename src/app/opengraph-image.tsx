@@ -1,49 +1,67 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "./_og/frame";
 
-export const runtime = "edge";
 export const alt = "UseTiny - Free Online Tools";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const TOOL_DOTS = [
+  "#f59e0b",
+  "#a78bfa",
+  "#a855f7",
+  "#10b981",
+  "#ec4899",
+  "#f97316",
+  "#3b82f6",
+  "#ef4444",
+  "#06b6d4",
+  "#f43f5e",
+];
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 120,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        UseTiny
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginTop: 24,
-        }}
-      >
-        <div style={{ fontSize: 22, color: "#71717a" }}>
-          Small tools that do one thing well.
+  return renderOgImage({
+    tagline: "Tiny tools. No sign-up. No tracking.",
+    taglineMarginTop: 40,
+    children: (
+      <>
+        <div style={{ display: "flex", alignItems: "baseline" }}>
+          <div
+            style={{
+              fontSize: 224,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#fafafa",
+            }}
+          >
+            UseTiny
+          </div>
+          <div
+            style={{
+              fontSize: 224,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#a78bfa",
+            }}
+          >
+            .
+          </div>
         </div>
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      </div>
-    </div>,
-    { ...size },
-  );
+        <div style={{ display: "flex", gap: 14, marginTop: 36 }}>
+          {TOOL_DOTS.map((c) => (
+            <div
+              key={c}
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                backgroundColor: c,
+                display: "flex",
+              }}
+            />
+          ))}
+        </div>
+      </>
+    ),
+  });
 }

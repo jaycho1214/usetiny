@@ -1,48 +1,37 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "PDF Editor | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const WORDMARK_STYLE = {
+  fontSize: 184,
+  fontWeight: 900,
+  letterSpacing: "-0.06em",
+  lineHeight: 1,
+  color: "#fafafa",
+} as const;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      <div style={{ display: "flex", flex: 1 }} />
-      <div
-        style={{
-          fontSize: 110,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-          textAlign: "right" as const,
-        }}
-      >
-        PDF Editor
+  return renderOgImage({
+    tagline: "Annotate, fill, sign. Files never leave your device.",
+    taglineMarginTop: 48,
+    children: (
+      <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+        <div style={WORDMARK_STYLE}>PDF</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "8px 16px",
+            backgroundColor: "rgba(244,63,94,0.32)",
+            borderRadius: 4,
+          }}
+        >
+          <div style={WORDMARK_STYLE}>Editor</div>
+        </div>
+        <div style={{ ...WORDMARK_STYLE, color: "#f43f5e" }}>.</div>
       </div>
-      <div
-        style={{
-          fontSize: 22,
-          color: "#71717a",
-          marginTop: 24,
-          textAlign: "right" as const,
-        }}
-      >
-        Annotate, fill forms, manage pages. Files stay on your device.
-      </div>
-    </div>,
-    { ...size },
-  );
+    ),
+  });
 }

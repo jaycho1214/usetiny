@@ -1,58 +1,56 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "Rich Text | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 110,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        Rich Text
-      </div>
-      <div
-        style={{
-          fontSize: 36,
-          color: "#71717a",
-          letterSpacing: "0.4em",
-          marginTop: 28,
-        }}
-      >
-        B I U H¹ ¶
-      </div>
-      <div style={{ display: "flex", flex: 1 }} />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-        }}
-      >
-        <div style={{ fontSize: 22, color: "#71717a" }}>
-          Format on the fly. Saved locally.
+  return renderOgImage({
+    tagline: "All the formatting. None of the sign-up.",
+    taglineMarginTop: 48,
+    children: (
+      <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+        <div
+          style={{
+            fontSize: 208,
+            fontWeight: 900,
+            letterSpacing: "-0.06em",
+            lineHeight: 1,
+            color: "#fafafa",
+          }}
+        >
+          Rich
         </div>
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "10px 14px",
+            backgroundColor: "rgba(139,92,246,0.32)",
+            borderRadius: 4,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 208,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#fafafa",
+            }}
+          >
+            Text
+          </div>
+        </div>
+        <div
+          style={{
+            width: 6,
+            height: 192,
+            backgroundColor: "#a78bfa",
+            display: "flex",
+          }}
+        />
       </div>
-    </div>,
-    { ...size },
-  );
+    ),
+  });
 }

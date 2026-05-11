@@ -128,21 +128,29 @@ Use these import aliases (configured in `tsconfig.json` and `components.json`):
 
 Each route has an `opengraph-image.tsx` that generates a 1200×630 PNG via Next.js `ImageResponse` (Satori renderer). Preview by visiting `/<route>/opengraph-image` in the browser.
 
-**Design rules** (from `.impeccable.md` — fast, minimal, quiet, monochrome):
+**Shared helper**: every OG route uses `renderOgImage()` from `src/app/_og/frame.tsx`. The helper renders the outer frame (padding, background, font family), the tagline, and the `usetiny.app` brand mark, and loads the fonts. Each route file passes `tagline` and the variant-specific `children` (wordmark + visual element). Optional `taglineMarginTop` (default 44) overrides the gap between content and tagline. Also re-export `OG_SIZE as size` and `OG_CONTENT_TYPE as contentType` from each route (Next.js reads these as named exports per the metadata file convention).
 
-- Dark background (`#0a0a0b`), white text (`#fafafa`), muted gray for descriptions (`#71717a`) and brand URL (`#3f3f46`)
-- Tool name is the dominant element — large (96-120px), weight 800, tight letter-spacing (`-0.05em`)
-- No decorative elements: no lines, borders, badges, icons, or gradients
-- Each image has a **distinct composition** — vary layout per page (centered, bottom-left, center-left, right-aligned). Do NOT use the same template for every image.
-- Description is one short sentence. Brand URL (`usetiny.app`) is small and placed opposite the main text.
-- `system-ui, sans-serif` font only (Satori limitation)
+**Fonts**: real Geist TTFs live in `src/app/_og/fonts/` (downloaded from `vercel/geist-font`). The bundler traces them via `new URL("./fonts/...", import.meta.url)` in `_og/fonts.ts`, and the three loaders are memoized at module scope so each TTF is read at most once per process. Do NOT use edge runtime for OG images — Node runtime is required for `readFile`. Do NOT fetch fonts from CDNs at request time (WOFF2 isn't supported by Satori; CDN dependencies break builds).
+
+**Design rules**:
+
+- Dark background (`#0a0a0b`), no gradients, no eyebrows, no decorative chrome
+- **Wordmark**: tool name in Geist Black (`fontWeight: 900`), ~180–224px depending on length. End the wordmark with a colored period (`.`) in the tool's accent color — this is the only required color accent
+- **Inline visual element** (optional but encouraged): exactly ONE small, distinctive element that demonstrates the tool — e.g., a selection highlight + cursor (Rich Text), a QR finder pattern (QR), a formula chip `=SUM(...)` (Spreadsheet), a `# ` prefix (Markdown), an HTTP method pill (Webhook), a file-size delta `2.4 MB → 184 KB` (Image). Use the tool's accent color. Keep it small relative to the wordmark.
+- **Tagline**: one punchy marketing line. Geist Medium 500, fontSize 44, color `#d4d4d8`. Use the opposition pattern (value + friction removed) — e.g. "All the formatting. None of the sign-up." Avoid feature lists.
+- **Brand mark**: `usetiny.app` bottom-right in Geist Mono Medium 500, fontSize 36, color `#d4d4d8`. Must be clearly visible.
+- **Long names** (≥ 9 chars per word): stack vertically with one word per line (e.g. `Word` / `Counter`); render second word in `#71717a` for hierarchy.
+- Each image still has a **distinct composition** — the inline visual element should differ tool-to-tool.
+
+**Tool accent colors**: Notepad `#f59e0b` · Rich Text `#a78bfa` · QR `#a855f7` · Spreadsheet `#10b981` · Markdown `#ec4899` · Image `#f97316` · Word Counter `#3b82f6` · YouTube Looper `#ef4444` · Webhook Inspector `#06b6d4` · PDF Editor `#f43f5e`.
 
 **Satori constraints** — the renderer does NOT support:
 
 - CSS Grid (flexbox only)
 - `<br />` inside elements (causes "Expected div to have explicit display: flex" error — use single text strings instead)
 - SVG filters, blur, backdrop-filter
-- Custom web fonts without explicit font data loading
+- WOFF2 fonts ("Unsupported OpenType signature wOF2") — use TTF or WOFF only
+- Custom web fonts without explicit font data loading via the `fonts` option
 
 ### New Tool Checklist
 

@@ -1,65 +1,85 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "Webhook Inspector | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const WORDMARK_STYLE = {
+  fontSize: 144,
+  fontWeight: 900,
+  letterSpacing: "-0.06em",
+  lineHeight: 1,
+} as const;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-        padding: "80px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          width: "100%",
-        }}
-      >
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 28,
-          }}
-        >
+  return renderOgImage({
+    tagline: "Test webhooks. Without the curl.",
+    taglineMarginTop: 36,
+    children: (
+      <>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div
             style={{
-              fontSize: 110,
-              fontWeight: 800,
-              letterSpacing: "-0.05em",
-              lineHeight: 1,
+              display: "flex",
+              alignItems: "center",
+              padding: "8px 16px",
+              borderRadius: 8,
+              backgroundColor: "#06b6d4",
+              fontFamily: "Geist Mono",
+              fontSize: 22,
+              fontWeight: 500,
+              color: "#0a0a0b",
             }}
           >
-            Webhook Inspector
+            POST
           </div>
           <div
             style={{
+              fontFamily: "Geist Mono",
               fontSize: 24,
-              color: "#71717a",
-              maxWidth: 760,
-              textAlign: "right",
-              lineHeight: 1.3,
+              fontWeight: 500,
+              color: "#a1a1aa",
             }}
           >
-            Capture any HTTP request at a unique URL. Inspect headers, query,
-            and body live.
+            /hook/a8f3c2…
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginLeft: 8,
+            }}
+          >
+            <div
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: "#22c55e",
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                fontFamily: "Geist Mono",
+                fontSize: 22,
+                fontWeight: 500,
+                color: "#22c55e",
+              }}
+            >
+              200
+            </div>
           </div>
         </div>
-      </div>
-    </div>,
-    { ...size },
-  );
+        <div style={{ ...WORDMARK_STYLE, color: "#fafafa", marginTop: 28 }}>
+          Webhook
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", marginTop: 40 }}>
+          <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Inspector</div>
+          <div style={{ ...WORDMARK_STYLE, color: "#06b6d4" }}>.</div>
+        </div>
+      </>
+    ),
+  });
 }

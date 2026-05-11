@@ -1,49 +1,73 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "Notepad | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const TABS = ["Brainstorm", "Meeting", "Ideas"];
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 120,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        Notepad
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginTop: 24,
-        }}
-      >
-        <div style={{ fontSize: 22, color: "#71717a" }}>
-          Text editor with tabs. Saved locally.
+  return renderOgImage({
+    tagline: "Quick notes. Saved without asking.",
+    taglineMarginTop: 40,
+    children: (
+      <>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {TABS.map((label, i) => (
+            <div
+              key={label}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "10px 18px",
+                borderRadius: 10,
+                backgroundColor: i === 0 ? "#1f1d18" : "transparent",
+                border: i === 0 ? "1px solid #3f3725" : "1px solid #27272a",
+                fontSize: 22,
+                fontWeight: 500,
+                color: i === 0 ? "#fef3c7" : "#71717a",
+              }}
+            >
+              {label}
+            </div>
+          ))}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "10px 14px",
+              fontSize: 22,
+              color: "#52525b",
+            }}
+          >
+            +
+          </div>
         </div>
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      </div>
-    </div>,
-    { ...size },
-  );
+        <div style={{ display: "flex", alignItems: "center", marginTop: 28 }}>
+          <div
+            style={{
+              fontSize: 224,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#fafafa",
+            }}
+          >
+            Notepad
+          </div>
+          <div
+            style={{
+              fontSize: 224,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#f59e0b",
+            }}
+          >
+            .
+          </div>
+        </div>
+      </>
+    ),
+  });
 }

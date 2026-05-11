@@ -1,49 +1,61 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "Spreadsheet | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 108,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        Spreadsheet
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          marginTop: 24,
-        }}
-      >
-        <div style={{ fontSize: 22, color: "#71717a" }}>
-          Disposable spreadsheet with formulas and export.
+  return renderOgImage({
+    tagline: "Real formulas. Disposable sheets.",
+    children: (
+      <>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "10px 18px",
+            borderRadius: 10,
+            backgroundColor: "#0d1f17",
+            border: "1px solid #14532d",
+            alignSelf: "flex-start",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: "Geist Mono",
+              fontSize: 24,
+              fontWeight: 500,
+              color: "#34d399",
+            }}
+          >
+            =SUM(B2:B12)
+          </div>
         </div>
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      </div>
-    </div>,
-    { ...size },
-  );
+        <div style={{ display: "flex", alignItems: "center", marginTop: 24 }}>
+          <div
+            style={{
+              fontSize: 152,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#fafafa",
+            }}
+          >
+            Spreadsheet
+          </div>
+          <div
+            style={{
+              fontSize: 152,
+              fontWeight: 900,
+              letterSpacing: "-0.06em",
+              lineHeight: 1,
+              color: "#10b981",
+            }}
+          >
+            .
+          </div>
+        </div>
+      </>
+    ),
+  });
 }

@@ -1,61 +1,81 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "YouTube Looper | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const WORDMARK_STYLE = {
+  fontSize: 168,
+  fontWeight: 900,
+  letterSpacing: "-0.06em",
+  lineHeight: 1,
+} as const;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      <div style={{ display: "flex", flex: 1 }} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-        }}
-      >
+  return renderOgImage({
+    tagline: "Loop A to B. Until you nail it.",
+    taglineMarginTop: 40,
+    children: (
+      <>
         <div
           style={{
-            fontSize: 108,
-            fontWeight: 800,
-            letterSpacing: "-0.05em",
-            lineHeight: 1,
-            color: "#71717a",
+            display: "flex",
+            alignItems: "center",
+            width: 720,
+            height: 14,
+            borderRadius: 7,
+            backgroundColor: "#1f1f23",
+            position: "relative",
           }}
         >
+          <div
+            style={{
+              position: "absolute",
+              left: "22%",
+              top: -8,
+              bottom: -8,
+              width: "44%",
+              borderRadius: 7,
+              backgroundColor: "#ef4444",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingLeft: 14,
+              paddingRight: 14,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: "Geist Mono",
+                fontSize: 18,
+                fontWeight: 500,
+                color: "#fafafa",
+                display: "flex",
+              }}
+            >
+              A
+            </div>
+            <div
+              style={{
+                fontFamily: "Geist Mono",
+                fontSize: 18,
+                fontWeight: 500,
+                color: "#fafafa",
+                display: "flex",
+              }}
+            >
+              B
+            </div>
+          </div>
+        </div>
+        <div style={{ ...WORDMARK_STYLE, color: "#fafafa", marginTop: 36 }}>
           YouTube
         </div>
-        <div
-          style={{
-            fontSize: 108,
-            fontWeight: 800,
-            letterSpacing: "-0.05em",
-            lineHeight: 1,
-            marginTop: 4,
-          }}
-        >
-          Looper
+        <div style={{ display: "flex", alignItems: "baseline", marginTop: 40 }}>
+          <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Looper</div>
+          <div style={{ ...WORDMARK_STYLE, color: "#ef4444" }}>.</div>
         </div>
-      </div>
-      <div style={{ display: "flex", flex: 1 }} />
-      <div style={{ fontSize: 22, color: "#71717a" }}>
-        A-B loop any video. Save sections. Keyboard-first.
-      </div>
-    </div>,
-    { ...size },
-  );
+      </>
+    ),
+  });
 }

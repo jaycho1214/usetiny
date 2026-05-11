@@ -1,60 +1,63 @@
-import { ImageResponse } from "next/og";
+import { OG_CONTENT_TYPE, OG_SIZE, renderOgImage } from "../_og/frame";
 
-export const runtime = "edge";
 export const alt = "Image Compressor | UseTiny";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
+export const size = OG_SIZE;
+export const contentType = OG_CONTENT_TYPE;
+
+const WORDMARK_STYLE = {
+  fontSize: 144,
+  fontWeight: 900,
+  letterSpacing: "-0.06em",
+  lineHeight: 1,
+} as const;
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
-        padding: "72px 80px",
-        backgroundColor: "#0a0a0b",
-        color: "#fafafa",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 96,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-        }}
-      >
-        Image
-      </div>
-      <div
-        style={{
-          fontSize: 96,
-          fontWeight: 800,
-          letterSpacing: "-0.05em",
-          lineHeight: 1,
-          color: "#71717a",
-        }}
-      >
-        Compressor
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          marginTop: 32,
-        }}
-      >
-        <div style={{ fontSize: 20, color: "#71717a" }}>
-          Compress, resize, convert. Side-by-side preview.
+  return renderOgImage({
+    tagline: "Smaller files. Same sharp image.",
+    taglineMarginTop: 36,
+    children: (
+      <>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div
+            style={{
+              fontFamily: "Geist Mono",
+              fontSize: 38,
+              fontWeight: 500,
+              color: "#71717a",
+              textDecoration: "line-through",
+            }}
+          >
+            2.4 MB
+          </div>
+          <div
+            style={{
+              fontSize: 38,
+              fontWeight: 500,
+              color: "#52525b",
+              margin: "0 14px",
+            }}
+          >
+            →
+          </div>
+          <div
+            style={{
+              fontFamily: "Geist Mono",
+              fontSize: 38,
+              fontWeight: 500,
+              color: "#f97316",
+            }}
+          >
+            184 KB
+          </div>
         </div>
-        <div style={{ fontSize: 18, color: "#3f3f46" }}>usetiny.app</div>
-      </div>
-    </div>,
-    { ...size },
-  );
+        <div style={{ ...WORDMARK_STYLE, color: "#fafafa", marginTop: 28 }}>
+          Image
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", marginTop: 40 }}>
+          <div style={{ ...WORDMARK_STYLE, color: "#71717a" }}>Compressor</div>
+          <div style={{ ...WORDMARK_STYLE, color: "#f97316" }}>.</div>
+        </div>
+      </>
+    ),
+  });
 }
