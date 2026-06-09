@@ -316,6 +316,19 @@ export const PrintStyles = memo(function PrintStyles({
   .md-preview .katex-display > .katex {
     font-size: 1.1em !important;
   }
+
+  .md-preview [data-mermaid-src] {
+    display: flex !important;
+    justify-content: center !important;
+    margin: 12pt 0 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .md-preview [data-mermaid-src] svg {
+    max-width: 100% !important;
+    height: auto !important;
+  }
 }
 `;
 
