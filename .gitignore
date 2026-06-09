@@ -44,3 +44,4 @@ next-env.d.ts
 .claude/skills
 .agents/skills
 skills-lock.json
+.gstack/
