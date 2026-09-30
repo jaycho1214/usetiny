@@ -3,7 +3,7 @@
 import { Inbox } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { useWebhookInspectorStore } from "../store";
+import { EMPTY_REQUESTS, useWebhookInspectorStore } from "../store";
 import { useNow } from "./use-now";
 
 const METHOD_COLORS: Record<string, string> = {
@@ -18,7 +18,7 @@ const METHOD_COLORS: Record<string, string> = {
 
 export function RequestList({ endpointId }: { endpointId: string }) {
   const requests = useWebhookInspectorStore(
-    (s) => s.requests[endpointId] ?? [],
+    (s) => s.requests[endpointId] ?? EMPTY_REQUESTS,
   );
   const selectedId = useWebhookInspectorStore(
     (s) => s.selectedRequestId[endpointId] ?? null,

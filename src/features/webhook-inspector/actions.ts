@@ -10,11 +10,16 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const MINT_COOKIE = "usetiny-wh-mint";
 
-export type CreateEndpointResult = {
+export type MintedEndpoint = {
   id: string;
   createdAt: number;
   sig: string;
 };
+
+// Expected failures are returned, not thrown: production builds replace
+// thrown Server Function messages with a generic error.
+export type CreateEndpointResult =
+  { ok: true; endpoint: MintedEndpoint } | { ok: false; error: string };
 
 export async function createWebhookEndpoint(): Promise<CreateEndpointResult> {
   const now = Date.now();
@@ -23,14 +28,16 @@ export async function createWebhookEndpoint(): Promise<CreateEndpointResult> {
   const lastHour = lastDay.filter((t) => now - t < HOUR_MS);
 
   if (lastHour.length >= HOUR_LIMIT) {
-    throw new Error(
-      `Rate limit: max ${HOUR_LIMIT} endpoints per hour. Try again later.`,
-    );
+    return {
+      ok: false,
+      error: `Rate limit: max ${HOUR_LIMIT} endpoints per hour. Try again later.`,
+    };
   }
   if (lastDay.length >= DAY_LIMIT) {
-    throw new Error(
-      `Rate limit: max ${DAY_LIMIT} endpoints per day. Try again tomorrow.`,
-    );
+    return {
+      ok: false,
+      error: `Rate limit: max ${DAY_LIMIT} endpoints per day. Try again tomorrow.`,
+    };
   }
 
   await writeMintHistory([...lastDay, now]);
@@ -38,7 +45,7 @@ export async function createWebhookEndpoint(): Promise<CreateEndpointResult> {
   const id = randomUUID();
   const createdAt = now;
   const sig = signEndpoint(id, createdAt);
-  return { id, createdAt, sig };
+  return { ok: true, endpoint: { id, createdAt, sig } };
 }
 
 async function readMintHistory(): Promise<number[]> {

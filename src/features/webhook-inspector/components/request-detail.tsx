@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { type CapturedRequest, useWebhookInspectorStore } from "../store";
+import {
+  type CapturedRequest,
+  EMPTY_REQUESTS,
+  useWebhookInspectorStore,
+} from "../store";
 
 export function RequestDetail({ endpointId }: { endpointId: string }) {
   const requests = useWebhookInspectorStore(
-    (s) => s.requests[endpointId] ?? [],
+    (s) => s.requests[endpointId] ?? EMPTY_REQUESTS,
   );
   const selectedId = useWebhookInspectorStore(
     (s) => s.selectedRequestId[endpointId] ?? null,

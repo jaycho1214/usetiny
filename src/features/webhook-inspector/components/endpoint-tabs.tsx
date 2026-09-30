@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Plus,
-  MoreHorizontal,
-  Trash2,
-  Edit3,
-  Eraser,
-  Copy,
-} from "lucide-react";
+import { Plus, Ellipsis, Trash, PenLine, Eraser, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -30,7 +23,7 @@ import {
   type Endpoint,
   useWebhookInspectorStore,
 } from "../store";
-import { createWebhookEndpoint } from "../actions";
+import { useCreateEndpoint } from "./use-create-endpoint";
 import { buildEndpointUrl } from "./url";
 
 export function EndpointTabs() {
@@ -40,27 +33,18 @@ export function EndpointTabs() {
   const setActiveEndpoint = useWebhookInspectorStore(
     (s) => s.setActiveEndpoint,
   );
-  const addEndpoint = useWebhookInspectorStore((s) => s.addEndpoint);
   const renameEndpoint = useWebhookInspectorStore((s) => s.renameEndpoint);
   const deleteEndpoint = useWebhookInspectorStore((s) => s.deleteEndpoint);
   const clearRequests = useWebhookInspectorStore((s) => s.clearRequests);
 
   const [renamingId, setRenamingId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  const { creating, create } = useCreateEndpoint();
 
   const atCap = endpointOrder.length >= ENDPOINT_LIMIT;
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     if (atCap || creating) return;
-    setCreating(true);
-    try {
-      const ep = await createWebhookEndpoint();
-      addEndpoint(ep);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create endpoint");
-    } finally {
-      setCreating(false);
-    }
+    create();
   };
 
   const handleCopy = async (endpoint: Endpoint) => {
@@ -144,7 +128,7 @@ export function EndpointTabs() {
                     className="h-5 w-5 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <MoreHorizontal className="h-3 w-3" />
+                    <Ellipsis className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -152,7 +136,7 @@ export function EndpointTabs() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <DropdownMenuItem onSelect={() => setRenamingId(ep.id)}>
-                    <Edit3 className="h-3.5 w-3.5" />
+                    <PenLine className="h-3.5 w-3.5" />
                     Rename
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => handleCopy(ep)}>
@@ -168,7 +152,7 @@ export function EndpointTabs() {
                     variant="destructive"
                     onSelect={() => deleteEndpoint(ep.id)}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash className="h-3.5 w-3.5" />
                     Delete endpoint
                   </DropdownMenuItem>
                 </DropdownMenuContent>
