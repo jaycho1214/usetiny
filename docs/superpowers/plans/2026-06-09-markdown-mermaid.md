@@ -18,36 +18,41 @@ The most unit-testable unit is the pure `rehype-mermaid` transform (Task 3); if 
 
 ## File structure
 
-| File | Responsibility |
-| --- | --- |
-| `package.json` | adds `mermaid` dependency |
-| `src/lib/mermaid.ts` | **new** — singleton lazy import, theme-aware `initialize`, `renderMermaid()` helper, per-`theme:source` SVG cache |
-| `src/features/markdown/components/rehype-mermaid.ts` | **new** — rehype transform: mermaid fence → `<div data-mermaid-src>` placeholder |
-| `src/features/markdown/components/markdown-preview.tsx` | insert plugin into pipeline; add post-mount render effect + inline error UI + theme dependency |
-| `src/app/globals.css` | screen styles for the diagram container, SVG sizing, and error box |
-| `src/features/markdown/components/print-styles.tsx` | print rules so diagrams aren't clipped in PDF export |
+| File                                                    | Responsibility                                                                                                    |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `package.json`                                          | adds `mermaid` dependency                                                                                         |
+| `src/lib/mermaid.ts`                                    | **new** — singleton lazy import, theme-aware `initialize`, `renderMermaid()` helper, per-`theme:source` SVG cache |
+| `src/features/markdown/components/rehype-mermaid.ts`    | **new** — rehype transform: mermaid fence → `<div data-mermaid-src>` placeholder                                  |
+| `src/features/markdown/components/markdown-preview.tsx` | insert plugin into pipeline; add post-mount render effect + inline error UI + theme dependency                    |
+| `src/app/globals.css`                                   | screen styles for the diagram container, SVG sizing, and error box                                                |
+| `src/features/markdown/components/print-styles.tsx`     | print rules so diagrams aren't clipped in PDF export                                                              |
 
 ---
 
 ## Task 1: Add the mermaid dependency
 
 **Files:**
+
 - Modify: `package.json` (via pnpm)
 
 - [ ] **Step 1: Install mermaid**
 
 Run:
+
 ```bash
 pnpm add mermaid
 ```
+
 Expected: `package.json` `dependencies` gains a `mermaid` entry at `^11.x`; `pnpm-lock.yaml` updates with no errors.
 
 - [ ] **Step 2: Verify the version is v11**
 
 Run:
+
 ```bash
 node -e "console.log(require('mermaid/package.json').version)"
 ```
+
 Expected: prints `11.x.y` (the helper in Task 2 relies on the v11 `mermaid.render(id, src) -> {svg}` signature and `suppressErrorRendering` config, added in 11.4+). If the printed major is not `11`, stop and reconcile before continuing.
 
 - [ ] **Step 3: Commit**
@@ -62,6 +67,7 @@ git commit -m "chore(markdown): add mermaid dependency"
 ## Task 2: Shared mermaid render helper
 
 **Files:**
+
 - Create: `src/lib/mermaid.ts`
 
 - [ ] **Step 1: Create the helper**
@@ -75,7 +81,7 @@ Create `src/lib/mermaid.ts` with this exact content:
 export type MermaidTheme = "default" | "dark";
 export type MermaidRenderResult = { svg: string } | { error: string };
 
-type MermaidModule = typeof import("mermaid")["default"];
+type MermaidModule = (typeof import("mermaid"))["default"];
 
 let mermaidPromise: Promise<MermaidModule> | null = null;
 let lastTheme: MermaidTheme | null = null;
@@ -129,10 +135,12 @@ export async function renderMermaid(
 - [ ] **Step 2: Lint the new file**
 
 Run:
+
 ```bash
 pnpm lint
 ```
-Expected: PASS with no errors (warnings, if any, are acceptable). If `suppressErrorRendering` or `securityLevel: "strict"` produces a *type* error, the installed mermaid is older than expected — re-check Task 1 Step 2 rather than removing the option.
+
+Expected: PASS with no errors (warnings, if any, are acceptable). If `suppressErrorRendering` or `securityLevel: "strict"` produces a _type_ error, the installed mermaid is older than expected — re-check Task 1 Step 2 rather than removing the option.
 
 - [ ] **Step 3: Commit**
 
@@ -146,6 +154,7 @@ git commit -m "feat(markdown): add lazy theme-aware mermaid render helper"
 ## Task 3: rehype plugin to protect mermaid source
 
 **Files:**
+
 - Create: `src/features/markdown/components/rehype-mermaid.ts`
 
 Why: `rehype-highlight` runs over every code block and would wrap mermaid source in highlight `<span>`s, corrupting it. This plugin runs **before** highlight and converts each `<pre><code class="language-mermaid">` into a plain `<div data-mermaid-src="…">` placeholder, so highlight never sees it and the source survives verbatim.
@@ -209,9 +218,11 @@ export function rehypeMermaid() {
 - [ ] **Step 2: Lint the new file**
 
 Run:
+
 ```bash
 pnpm lint
 ```
+
 Expected: PASS (no errors).
 
 - [ ] **Step 3: Commit**
@@ -226,6 +237,7 @@ git commit -m "feat(markdown): add rehype plugin to lift mermaid fences"
 ## Task 4: Wire rendering into MarkdownPreview
 
 **Files:**
+
 - Modify: `src/features/markdown/components/markdown-preview.tsx` (full rewrite — file is small)
 
 - [ ] **Step 1: Replace the file content**
@@ -358,9 +370,11 @@ export function MarkdownPreview({ content }: MarkdownPreviewProps) {
 - [ ] **Step 2: Lint**
 
 Run:
+
 ```bash
 pnpm lint
 ```
+
 Expected: PASS (no errors).
 
 - [ ] **Step 3: Commit**
@@ -375,6 +389,7 @@ git commit -m "feat(markdown): render mermaid diagrams in preview"
 ## Task 5: Styles (screen + print)
 
 **Files:**
+
 - Modify: `src/app/globals.css` (append a block at end of file)
 - Modify: `src/features/markdown/components/print-styles.tsx` (add a rule inside the existing `@media print` CSS)
 
@@ -414,21 +429,21 @@ Append to the end of `src/app/globals.css`:
 
 - [ ] **Step 2: Add print styles**
 
-In `src/features/markdown/components/print-styles.tsx`, inside the `const css = \`...\`` template (which is wrapped in `@media print { ... }`), add this rule just before the closing `}` of the `@media print` block (e.g. right after the `.md-preview .katex-display > .katex { ... }` rule):
+In `src/features/markdown/components/print-styles.tsx`, inside the `const css = \`...\``template (which is wrapped in`@media print { ... }`), add this rule just before the closing `}`of the`@media print`block (e.g. right after the`.md-preview .katex-display > .katex { ... }` rule):
 
 ```css
-  .md-preview [data-mermaid-src] {
-    display: flex !important;
-    justify-content: center !important;
-    margin: 12pt 0 !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-  }
+.md-preview [data-mermaid-src] {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 12pt 0 !important;
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
 
-  .md-preview [data-mermaid-src] svg {
-    max-width: 100% !important;
-    height: auto !important;
-  }
+.md-preview [data-mermaid-src] svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
 ```
 
 Note: diagrams print using whatever theme is active on screen. Dark-theme diagrams on a white page will look off — for clean PDFs, switch to light theme before exporting. (Documented limitation; not handled here.)
@@ -436,9 +451,11 @@ Note: diagrams print using whatever theme is active on screen. Dark-theme diagra
 - [ ] **Step 3: Lint + build**
 
 Run:
+
 ```bash
 pnpm lint && pnpm build
 ```
+
 Expected: lint PASS; `pnpm build` completes successfully (this is the real check that the dynamic `import("mermaid")` and the rehype pipeline compile and bundle under Turbopack). If the build fails on the mermaid import, capture the error — do not silently remove the dynamic import.
 
 - [ ] **Step 4: Commit**
@@ -503,7 +520,7 @@ Add a broken diagram:
 ````markdown
 ```mermaid
 graph TD
-  A --> 
+  A -->
 ```
 ````
 

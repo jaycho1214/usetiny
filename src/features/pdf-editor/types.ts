@@ -1,17 +1,7 @@
 export type Tool =
-  | "select"
-  | "text"
-  | "draw"
-  | "highlight"
-  | "form"
-  | "fill"
-  | "eraser";
+  "select" | "text" | "draw" | "highlight" | "form" | "fill" | "eraser";
 export type FormFieldType =
-  | "text"
-  | "checkbox"
-  | "dropdown"
-  | "date"
-  | "signature";
+  "text" | "checkbox" | "dropdown" | "date" | "signature";
 
 export interface Point {
   x: number;
@@ -61,7 +51,4 @@ export interface FormAnnotation extends BaseAnnotation {
 }
 
 export type Annotation =
-  | TextAnnotation
-  | DrawAnnotation
-  | HighlightAnnotation
-  | FormAnnotation;
+  TextAnnotation | DrawAnnotation | HighlightAnnotation | FormAnnotation;

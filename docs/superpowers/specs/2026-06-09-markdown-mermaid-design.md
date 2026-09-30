@@ -40,13 +40,13 @@ All mermaid concerns live in one module:
   module scope, keeping mermaid (large) out of the initial bundle. It only
   loads when a diagram is actually present.
 - **Initialization:** `initialize({ startOnLoad: false, securityLevel: "strict",
-  suppressErrorRendering: true, theme })`.
+suppressErrorRendering: true, theme })`.
   - `securityLevel: "strict"` sanitizes diagram labels — safe for arbitrary
     user input.
   - `suppressErrorRendering: true` stops mermaid from injecting its own error
     diagram into the DOM, so we control the failure UI.
 - **API:** `renderMermaid(id: string, source: string, theme: "default" | "dark")
-  → Promise<{ svg: string } | { error: string }>`.
+→ Promise<{ svg: string } | { error: string }>`.
   - Re-calls `initialize` when the requested theme differs from the last one
     used (mermaid bakes theme at init time).
   - Wraps `mermaid.render` in try/catch and returns `{ error }` with the
@@ -54,7 +54,7 @@ All mermaid concerns live in one module:
 
 ### 2. Protect mermaid source from `rehype-highlight` — custom rehype plugin
 
-`rehype-highlight` runs over *every* code block, which would wrap mermaid source
+`rehype-highlight` runs over _every_ code block, which would wrap mermaid source
 in highlight `<span>`s and corrupt it before mermaid can parse it.
 
 Add a tiny local rehype plugin, inserted **between `remarkRehype` and
@@ -96,13 +96,13 @@ SVGs print as part of the existing `window.print()` flow.
 
 ## Components / files touched
 
-| File | Change |
-| --- | --- |
-| `package.json` | add `mermaid` dependency |
-| `src/lib/mermaid.ts` | **new** — lazy loader, init, `renderMermaid` helper, cache |
-| `src/features/markdown/.../rehype-mermaid.ts` (or inline) | **new** — rehype plugin lifting mermaid fences to placeholders |
-| `src/features/markdown/components/markdown-preview.tsx` | insert plugin into pipeline; add post-mount render effect + error UI |
-| `src/app/globals.css` (or scoped styles) | `.md-preview svg`/mermaid block sizing for screen + print |
+| File                                                      | Change                                                               |
+| --------------------------------------------------------- | -------------------------------------------------------------------- |
+| `package.json`                                            | add `mermaid` dependency                                             |
+| `src/lib/mermaid.ts`                                      | **new** — lazy loader, init, `renderMermaid` helper, cache           |
+| `src/features/markdown/.../rehype-mermaid.ts` (or inline) | **new** — rehype plugin lifting mermaid fences to placeholders       |
+| `src/features/markdown/components/markdown-preview.tsx`   | insert plugin into pipeline; add post-mount render effect + error UI |
+| `src/app/globals.css` (or scoped styles)                  | `.md-preview svg`/mermaid block sizing for screen + print            |
 
 ## Error handling
 
