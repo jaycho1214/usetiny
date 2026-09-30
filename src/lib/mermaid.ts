@@ -39,6 +39,10 @@ export async function renderMermaid(
         securityLevel: "strict",
         suppressErrorRendering: true,
         theme,
+        // mermaid 12 defaults to the "neo" look + ELK layout (a separate
+        // ~1.5 MB chunk). Keep the classic look our screen/print CSS targets.
+        look: "classic",
+        layout: "dagre",
       });
       lastTheme = theme;
     }

@@ -80,7 +80,6 @@ export const useNotepadStore = create<NotepadStore>()(
           return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [id]: _removed, ...remainingTabs } = state.tabs;
         const remainingIds = Object.keys(remainingTabs);
 

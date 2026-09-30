@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Pause,
   Pencil,
   Play,
   Keyboard,
-  Trash2,
+  Trash,
   Share2,
   Save,
   Repeat,
@@ -81,6 +82,18 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
+function parseTimeParam(raw: string | null): number | null {
+  if (raw === null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function parseRateParam(raw: string | null): number {
+  if (raw === null) return 1;
+  const n = Number(raw);
+  return PLAYBACK_RATES.some((r) => Math.abs(r - n) < 0.01) ? n : 1;
+}
+
 export default function YoutubeLooperContent() {
   const hydrated = useStoreHydration(useYoutubeLooperStore);
   const savedLoops = useYoutubeLooperStore((s) => s.savedLoops);
@@ -90,18 +103,31 @@ export default function YoutubeLooperContent() {
   const lastVideoId = useYoutubeLooperStore((s) => s.lastVideoId);
   const setLastVideoId = useYoutubeLooperStore((s) => s.setLastVideoId);
 
+  const searchParams = useSearchParams();
   const [urlInput, setUrlInput] = useState("");
-  const [videoId, setVideoIdState] = useState<string | null>(null);
+  const [selectedVideoId, setVideoIdState] = useState<string | null>(null);
+  const urlParam = searchParams.get("v");
+  const urlVideoId = urlParam ? extractVideoId(urlParam) : null;
+  // Explicit pick > shared link (?v=) > last video from the previous session.
+  const videoId =
+    selectedVideoId ?? urlVideoId ?? (hydrated ? lastVideoId : null);
   const [videoTitle, setVideoTitle] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackRate, setPlaybackRateState] = useState<number>(1);
-  const [loopStart, setLoopStart] = useState<number | null>(null);
-  const [loopEnd, setLoopEnd] = useState<number | null>(null);
+  const [playbackRate, setPlaybackRateState] = useState(() =>
+    parseRateParam(searchParams.get("rate")),
+  );
+  const [loopStart, setLoopStart] = useState(() =>
+    parseTimeParam(searchParams.get("a")),
+  );
+  const [loopEnd, setLoopEnd] = useState(() =>
+    parseTimeParam(searchParams.get("b")),
+  );
   const [loopEnabled, setLoopEnabled] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
-  const [playerReady, setPlayerReady] = useState(false);
+  const [readyVideoId, setReadyVideoId] = useState<string | null>(null);
+  const playerReady = videoId !== null && readyVideoId === videoId;
 
   const playerRef = useRef<YTPlayer | null>(null);
   const urlInputRef = useRef<HTMLInputElement | null>(null);
@@ -118,41 +144,11 @@ export default function YoutubeLooperContent() {
     loopEnabledRef.current = loopEnabled;
   }, [isPlaying, loopStart, loopEnd, loopEnabled]);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    const params = new URLSearchParams(window.location.search);
-    const v = params.get("v");
-    const candidate = v ? extractVideoId(v) : null;
-    const initialId = candidate ?? lastVideoId;
-    if (initialId) {
-      setVideoIdState(initialId);
-    }
-    const a = params.get("a");
-    const b = params.get("b");
-    const rate = params.get("rate");
-    if (a !== null) {
-      const n = Number(a);
-      if (Number.isFinite(n) && n >= 0) setLoopStart(n);
-    }
-    if (b !== null) {
-      const n = Number(b);
-      if (Number.isFinite(n) && n >= 0) setLoopEnd(n);
-    }
-    if (rate !== null) {
-      const n = Number(rate);
-      if (PLAYBACK_RATES.some((r) => Math.abs(r - n) < 0.01)) {
-        setPlaybackRateState(n);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated]);
-
   // Initialize YouTube player when videoId is set
   useEffect(() => {
     if (!hydrated || !videoId) return;
 
     let cancelled = false;
-    setPlayerReady(false);
     setLastVideoId(videoId);
 
     loadYouTubeAPI()
@@ -183,7 +179,7 @@ export default function YoutubeLooperContent() {
           events: {
             onReady: (e) => {
               if (cancelled) return;
-              setPlayerReady(true);
+              setReadyVideoId(videoId);
               setDuration(e.target.getDuration());
               try {
                 e.target.setPlaybackRate(playbackRate);
@@ -215,7 +211,7 @@ export default function YoutubeLooperContent() {
             },
             onError: () => {
               toast.error("Couldn't load video");
-              setPlayerReady(false);
+              setReadyVideoId(null);
             },
           },
         });
@@ -783,7 +779,7 @@ export default function YoutubeLooperContent() {
                   aria-label="Clear loop"
                   className="h-8 w-8"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash className="h-3.5 w-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -1137,7 +1133,7 @@ function SavedLoopRow({
                   aria-label={`Delete ${loop.name}`}
                   className="h-7 w-7 opacity-0 group-hover:opacity-100 focus:opacity-100 focus-visible:opacity-100 transition-opacity"
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash className="h-3.5 w-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Delete</TooltipContent>

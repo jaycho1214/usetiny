@@ -347,7 +347,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
       canvasContext: ctx,
       viewport: vp,
       annotationMode: 0,
-    } as Parameters<typeof page.render>[0]);
+    });
     return () => {
       task.cancel();
     };

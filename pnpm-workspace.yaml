@@ -1,6 +1,20 @@
 allowBuilds:
-  '@posthog/cli': true
+  "@posthog/cli": true
   core-js: true
   protobufjs: true
   sharp: true
   unrs-resolver: true
+# Security floors for transitive deps whose parents pin/lock vulnerable versions.
+overrides:
+  # mermaid > chevrotain pins lodash-es@4.17.23 exactly
+  lodash-es@<4.17.24: ^4.17.24
+  # @posthog/nextjs-config > webpack (build-time only)
+  fast-uri@<3.1.8: ^3.1.8
+  browserslist@<4.28.7: ^4.28.7
+# ESLint 10: these eslint-config-next plugins work (verified) but haven't
+# widened their peer range yet. Remove once they declare ^10.
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-react>eslint: "10"
+    eslint-plugin-import>eslint: "10"
+    eslint-plugin-jsx-a11y>eslint: "10"

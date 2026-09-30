@@ -56,8 +56,7 @@ import { ShortcutsDialog } from "@/components/shortcuts-dialog";
 import { imageShortcutSections } from "./shortcuts";
 
 export default function ImageContent() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hydrated = useStoreHydration(useImageStore as any);
+  const hydrated = useStoreHydration(useImageStore);
   const isMac = useIsMac();
 
   const files = useImageStore((s) => s.files);
@@ -117,48 +116,8 @@ export default function ImageContent() {
   const orderedFiles = fileOrder.map((id) => files[id]).filter(Boolean);
   const hasFiles = fileOrder.length > 0;
 
-  // ── Worker lifecycle ──────────────────────────────────
-
-  useEffect(() => {
-    workerRef.current = new Worker(
-      new URL("../worker/codec-worker.ts", import.meta.url),
-      { type: "module" },
-    );
-
-    workerRef.current.onmessage = (e: MessageEvent<WorkerResponse>) => {
-      const msg = e.data;
-      const store = useImageStore.getState();
-      if (msg.type === "result") {
-        const blob = new Blob([msg.data], {
-          type: formatToMime(msg.format),
-        });
-        const url = URL.createObjectURL(blob);
-        store.updateFile(msg.fileId, {
-          processedBlob: blob,
-          processedUrl: url,
-          processedSize: msg.data.byteLength,
-          processedWidth: msg.width,
-          processedHeight: msg.height,
-          status: "done",
-          error: null,
-        });
-        isProcessing.current = false;
-        processNext();
-      } else if (msg.type === "error") {
-        store.updateFile(msg.fileId, { status: "error", error: msg.message });
-        isProcessing.current = false;
-        processNext();
-      }
-    };
-
-    return () => {
-      workerRef.current?.terminate();
-      workerRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const processNext = useCallback(() => {
+  // Named function expression so the recursive calls below bind to itself.
+  const processNext = useCallback(function processNext() {
     if (isProcessing.current || processingQueue.current.length === 0) return;
     if (!workerRef.current) {
       isProcessing.current = false;
@@ -213,6 +172,46 @@ export default function ImageContent() {
         processNext();
       });
   }, []);
+
+  // ── Worker lifecycle ──────────────────────────────────
+
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL("../worker/codec-worker.ts", import.meta.url),
+      { type: "module" },
+    );
+
+    workerRef.current.onmessage = (e: MessageEvent<WorkerResponse>) => {
+      const msg = e.data;
+      const store = useImageStore.getState();
+      if (msg.type === "result") {
+        const blob = new Blob([msg.data], {
+          type: formatToMime(msg.format),
+        });
+        const url = URL.createObjectURL(blob);
+        store.updateFile(msg.fileId, {
+          processedBlob: blob,
+          processedUrl: url,
+          processedSize: msg.data.byteLength,
+          processedWidth: msg.width,
+          processedHeight: msg.height,
+          status: "done",
+          error: null,
+        });
+        isProcessing.current = false;
+        processNext();
+      } else if (msg.type === "error") {
+        store.updateFile(msg.fileId, { status: "error", error: msg.message });
+        isProcessing.current = false;
+        processNext();
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+    };
+  }, [processNext]);
 
   const enqueueFile = useCallback(
     (fileId: string) => {

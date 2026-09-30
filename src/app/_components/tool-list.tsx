@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, Ellipsis } from "lucide-react";
 import Link from "next/link";
 import { allTools } from "@/lib/tools";
@@ -27,7 +27,7 @@ export function ToolList() {
     }
     const recentTools = recent
       .map((href) => allTools.find((t) => t.href === href))
-      .filter(Boolean) as typeof allTools;
+      .filter((t) => t !== undefined);
     const rest = allTools.filter((t) => !recent.includes(t.href));
     return [...recentTools, ...rest].slice(0, 3);
   }, [recentRaw]);
@@ -44,12 +44,10 @@ export function ToolList() {
 
   // Keep the last non-zero count visible while the badge fades out,
   // so users don't see "0 NEW" flash during the transition.
-  const lastCountRef = useRef(hiddenNewCount);
-  useEffect(() => {
-    if (hiddenNewCount > 0) lastCountRef.current = hiddenNewCount;
-  }, [hiddenNewCount]);
-  const displayCount =
-    hiddenNewCount > 0 ? hiddenNewCount : lastCountRef.current;
+  const [displayCount, setDisplayCount] = useState(hiddenNewCount);
+  if (hiddenNewCount > 0 && hiddenNewCount !== displayCount) {
+    setDisplayCount(hiddenNewCount);
+  }
 
   if (!tools) {
     return (

@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { PDFPageProxy } from "pdfjs-dist";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
+import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -39,8 +45,7 @@ import { pdfEditorShortcutSections } from "./shortcuts";
 import { useIsMac } from "@/hooks/use-is-mac";
 
 export function PDFEditor() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const hydrated = useStoreHydration(usePDFEditorStore as any);
+  const hydrated = useStoreHydration(usePDFEditorStore);
   const isMac = useIsMac();
 
   const pdfData = usePDFEditorStore((s) => s.pdfData);
@@ -71,26 +76,32 @@ export function PDFEditor() {
   const sidebarOpen = usePDFEditorStore((s) => s.sidebarOpen);
 
   const pdfDoc = usePdfDocument(pdfData);
-  const [pageProxy, setPageProxy] = useState<PDFPageProxy | null>(null);
+  // Tagged with its document so a page from a closed PDF is never rendered.
+  const [loadedPage, setLoadedPage] = useState<{
+    doc: PDFDocumentProxy;
+    page: PDFPageProxy;
+  } | null>(null);
+  const pageProxy =
+    pdfDoc && loadedPage?.doc === pdfDoc ? loadedPage.page : null;
   const [exporting, setExporting] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
-  const [pdfRestored, setPdfRestored] = useState(false);
   const [pageInput, setPageInput] = useState("");
   const [editingPage, setEditingPage] = useState(false);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const pdfRestoredRef = useRef(false);
 
   // Restore PDF from IndexedDB after hydration
   useEffect(() => {
-    if (!hydrated || pdfRestored) return;
-    setPdfRestored(true);
+    if (!hydrated || pdfRestoredRef.current) return;
+    pdfRestoredRef.current = true;
     const storedFileName = usePDFEditorStore.getState().fileName;
     if (storedFileName && !usePDFEditorStore.getState().pdfData) {
       loadPdfFromIDB().then((data) => {
         if (data) restorePdfData(data);
       });
     }
-  }, [hydrated, pdfRestored, restorePdfData]);
+  }, [hydrated, restorePdfData]);
 
   // Save PDF to IndexedDB when it changes
   useEffect(() => {
@@ -169,13 +180,10 @@ export function PDFEditor() {
 
   // Load current page proxy
   useEffect(() => {
-    if (!pdfDoc) {
-      setPageProxy(null);
-      return;
-    }
+    if (!pdfDoc) return;
     let cancelled = false;
     pdfDoc.getPage(currentPage + 1).then((page) => {
-      if (!cancelled) setPageProxy(page);
+      if (!cancelled) setLoadedPage({ doc: pdfDoc, page });
     });
     return () => {
       cancelled = true;
@@ -195,216 +203,6 @@ export function PDFEditor() {
     document.addEventListener("wheel", handleWheel, { passive: false });
     return () => document.removeEventListener("wheel", handleWheel);
   }, [setZoom, pdfData]);
-
-  const handleExportRef = useRef<() => void>(() => {});
-  const copiedPageRef = useRef<number | null>(null);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInput =
-        target.tagName === "TEXTAREA" || target.tagName === "INPUT";
-      const mod = e.metaKey || e.ctrlKey;
-
-      if (mod && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undo();
-        return;
-      }
-      if (mod && e.key === "z" && e.shiftKey) {
-        e.preventDefault();
-        redo();
-        return;
-      }
-      if (mod && (e.key === "s" || e.key === "S")) {
-        e.preventDefault();
-        handleExportRef.current();
-        return;
-      }
-      // Bold/Italic toggle on selected text annotation
-      if (mod && e.key === "b" && selectedId) {
-        const ann = usePDFEditorStore
-          .getState()
-          .annotations.find((a) => a.id === selectedId);
-        if (ann?.type === "text") {
-          e.preventDefault();
-          usePDFEditorStore
-            .getState()
-            .updateAnnotation(selectedId, { bold: !ann.bold });
-          return;
-        }
-      }
-      if (mod && e.key === "i" && selectedId) {
-        const ann = usePDFEditorStore
-          .getState()
-          .annotations.find((a) => a.id === selectedId);
-        if (ann?.type === "text") {
-          e.preventDefault();
-          usePDFEditorStore
-            .getState()
-            .updateAnnotation(selectedId, { italic: !ann.italic });
-          return;
-        }
-      }
-      if (mod && (e.key === "c" || e.key === "C") && !e.shiftKey) {
-        e.preventDefault();
-        if (selectedId) {
-          copySelected();
-        } else if (pdfData) {
-          copiedPageRef.current = currentPage;
-          toast.success(`Page ${currentPage + 1} copied`);
-        }
-        return;
-      }
-      if (mod && (e.key === "v" || e.key === "V") && !e.shiftKey) {
-        e.preventDefault();
-        if (selectedId || copiedPageRef.current === null) {
-          pasteClipboard();
-        } else if (pdfData && copiedPageRef.current !== null) {
-          duplicatePage(pdfData, copiedPageRef.current).then((r) => {
-            applyPageOp(r.data, r.totalPages, r.updateAnnotations);
-            toast.success("Page pasted");
-          });
-        }
-        return;
-      }
-      if (mod && (e.key === "x" || e.key === "X")) {
-        if (selectedId) {
-          e.preventDefault();
-          copySelected();
-          removeAnnotation(selectedId);
-        }
-        return;
-      }
-      if (mod && (e.key === "d" || e.key === "D")) {
-        if (selectedId) {
-          e.preventDefault();
-          duplicateSelected();
-        }
-        return;
-      }
-
-      if (isInput) return;
-
-      switch (e.key) {
-        case "v":
-        case "V":
-          setActiveTool("select");
-          break;
-        case "t":
-        case "T":
-          setActiveTool("text");
-          break;
-        case "d":
-        case "D":
-          setActiveTool("draw");
-          break;
-        case "h":
-        case "H":
-          setActiveTool("highlight");
-          break;
-        case "f":
-        case "F":
-          setActiveTool("form");
-          break;
-        case "g":
-        case "G":
-          setActiveTool("fill");
-          break;
-        case "e":
-        case "E":
-          setActiveTool("eraser");
-          break;
-        case "Delete":
-        case "Backspace":
-          if (selectedId) {
-            e.preventDefault();
-            removeAnnotation(selectedId);
-          } else if (pdfData && totalPages > 1) {
-            e.preventDefault();
-            deletePage(pdfData, currentPage).then((r) => {
-              applyPageOp(r.data, r.totalPages, r.updateAnnotations);
-              toast.success("Page deleted");
-            });
-          }
-          break;
-        case "Escape":
-          usePDFEditorStore.getState().setSelectedAnnotationId(null);
-          break;
-        case "ArrowLeft":
-          if (selectedId) {
-            e.preventDefault();
-            moveAnnotation(selectedId, e.shiftKey ? -0.01 : -0.002, 0);
-          } else if (currentPage > 0) {
-            e.preventDefault();
-            setCurrentPage(currentPage - 1);
-          }
-          break;
-        case "ArrowRight":
-          if (selectedId) {
-            e.preventDefault();
-            moveAnnotation(selectedId, e.shiftKey ? 0.01 : 0.002, 0);
-          } else if (currentPage < totalPages - 1) {
-            e.preventDefault();
-            setCurrentPage(currentPage + 1);
-          }
-          break;
-        case "ArrowUp":
-          if (selectedId) {
-            e.preventDefault();
-            moveAnnotation(selectedId, 0, e.shiftKey ? -0.01 : -0.002);
-          }
-          break;
-        case "ArrowDown":
-          if (selectedId) {
-            e.preventDefault();
-            moveAnnotation(selectedId, 0, e.shiftKey ? 0.01 : 0.002);
-          }
-          break;
-        case "=":
-        case "+":
-          if (mod) {
-            e.preventDefault();
-            setZoom((z) => Math.min(3, z + 0.25));
-          }
-          break;
-        case "-":
-          if (mod) {
-            e.preventDefault();
-            setZoom((z) => Math.max(0.25, z - 0.25));
-          }
-          break;
-        case "0":
-          if (mod) {
-            e.preventDefault();
-            setZoom(1);
-          }
-          break;
-        case "?":
-          setShowShortcuts(true);
-          break;
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [
-    selectedId,
-    currentPage,
-    totalPages,
-    pdfData,
-    setActiveTool,
-    removeAnnotation,
-    setCurrentPage,
-    setZoom,
-    undo,
-    redo,
-    copySelected,
-    pasteClipboard,
-    duplicateSelected,
-    moveAnnotation,
-    applyPageOp,
-  ]);
 
   const handleExport = useCallback(async () => {
     if (!pdfData) return;
@@ -427,7 +225,200 @@ export function PDFEditor() {
       setExporting(false);
     }
   }, [pdfData, annotations, fileName, markSaved]);
-  handleExportRef.current = handleExport;
+
+  const copiedPageRef = useRef<number | null>(null);
+
+  // Keyboard shortcuts. Effect Event so the listener is attached once but
+  // always sees the latest store state and handlers.
+  const handleKeyDown = useEffectEvent((e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    const isInput = target.tagName === "TEXTAREA" || target.tagName === "INPUT";
+    const mod = e.metaKey || e.ctrlKey;
+
+    if (mod && e.key === "z" && !e.shiftKey) {
+      e.preventDefault();
+      undo();
+      return;
+    }
+    if (mod && e.key === "z" && e.shiftKey) {
+      e.preventDefault();
+      redo();
+      return;
+    }
+    if (mod && (e.key === "s" || e.key === "S")) {
+      e.preventDefault();
+      handleExport();
+      return;
+    }
+    // Bold/Italic toggle on selected text annotation
+    if (mod && e.key === "b" && selectedId) {
+      const ann = usePDFEditorStore
+        .getState()
+        .annotations.find((a) => a.id === selectedId);
+      if (ann?.type === "text") {
+        e.preventDefault();
+        usePDFEditorStore
+          .getState()
+          .updateAnnotation(selectedId, { bold: !ann.bold });
+        return;
+      }
+    }
+    if (mod && e.key === "i" && selectedId) {
+      const ann = usePDFEditorStore
+        .getState()
+        .annotations.find((a) => a.id === selectedId);
+      if (ann?.type === "text") {
+        e.preventDefault();
+        usePDFEditorStore
+          .getState()
+          .updateAnnotation(selectedId, { italic: !ann.italic });
+        return;
+      }
+    }
+    if (mod && (e.key === "c" || e.key === "C") && !e.shiftKey) {
+      e.preventDefault();
+      if (selectedId) {
+        copySelected();
+      } else if (pdfData) {
+        copiedPageRef.current = currentPage;
+        toast.success(`Page ${currentPage + 1} copied`);
+      }
+      return;
+    }
+    if (mod && (e.key === "v" || e.key === "V") && !e.shiftKey) {
+      e.preventDefault();
+      if (selectedId || copiedPageRef.current === null) {
+        pasteClipboard();
+      } else if (pdfData && copiedPageRef.current !== null) {
+        duplicatePage(pdfData, copiedPageRef.current).then((r) => {
+          applyPageOp(r.data, r.totalPages, r.updateAnnotations);
+          toast.success("Page pasted");
+        });
+      }
+      return;
+    }
+    if (mod && (e.key === "x" || e.key === "X")) {
+      if (selectedId) {
+        e.preventDefault();
+        copySelected();
+        removeAnnotation(selectedId);
+      }
+      return;
+    }
+    if (mod && (e.key === "d" || e.key === "D")) {
+      if (selectedId) {
+        e.preventDefault();
+        duplicateSelected();
+      }
+      return;
+    }
+
+    if (isInput) return;
+
+    switch (e.key) {
+      case "v":
+      case "V":
+        setActiveTool("select");
+        break;
+      case "t":
+      case "T":
+        setActiveTool("text");
+        break;
+      case "d":
+      case "D":
+        setActiveTool("draw");
+        break;
+      case "h":
+      case "H":
+        setActiveTool("highlight");
+        break;
+      case "f":
+      case "F":
+        setActiveTool("form");
+        break;
+      case "g":
+      case "G":
+        setActiveTool("fill");
+        break;
+      case "e":
+      case "E":
+        setActiveTool("eraser");
+        break;
+      case "Delete":
+      case "Backspace":
+        if (selectedId) {
+          e.preventDefault();
+          removeAnnotation(selectedId);
+        } else if (pdfData && totalPages > 1) {
+          e.preventDefault();
+          deletePage(pdfData, currentPage).then((r) => {
+            applyPageOp(r.data, r.totalPages, r.updateAnnotations);
+            toast.success("Page deleted");
+          });
+        }
+        break;
+      case "Escape":
+        usePDFEditorStore.getState().setSelectedAnnotationId(null);
+        break;
+      case "ArrowLeft":
+        if (selectedId) {
+          e.preventDefault();
+          moveAnnotation(selectedId, e.shiftKey ? -0.01 : -0.002, 0);
+        } else if (currentPage > 0) {
+          e.preventDefault();
+          setCurrentPage(currentPage - 1);
+        }
+        break;
+      case "ArrowRight":
+        if (selectedId) {
+          e.preventDefault();
+          moveAnnotation(selectedId, e.shiftKey ? 0.01 : 0.002, 0);
+        } else if (currentPage < totalPages - 1) {
+          e.preventDefault();
+          setCurrentPage(currentPage + 1);
+        }
+        break;
+      case "ArrowUp":
+        if (selectedId) {
+          e.preventDefault();
+          moveAnnotation(selectedId, 0, e.shiftKey ? -0.01 : -0.002);
+        }
+        break;
+      case "ArrowDown":
+        if (selectedId) {
+          e.preventDefault();
+          moveAnnotation(selectedId, 0, e.shiftKey ? 0.01 : 0.002);
+        }
+        break;
+      case "=":
+      case "+":
+        if (mod) {
+          e.preventDefault();
+          setZoom((z) => Math.min(3, z + 0.25));
+        }
+        break;
+      case "-":
+        if (mod) {
+          e.preventDefault();
+          setZoom((z) => Math.max(0.25, z - 0.25));
+        }
+        break;
+      case "0":
+        if (mod) {
+          e.preventDefault();
+          setZoom(1);
+        }
+        break;
+      case "?":
+        setShowShortcuts(true);
+        break;
+    }
+  });
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleCloseFile = useCallback(() => {
     if (hasUnsavedChanges) setShowCloseConfirm(true);

@@ -99,22 +99,17 @@ export default function NotepadContent() {
   }, [activeTabId, tabs, deleteTab]);
 
   const orderedTabs = useMemo(
-    () =>
-      tabOrder
-        .map((id) => tabs[id])
-        .filter((tab): tab is import("../store").NotepadTab => Boolean(tab)),
+    () => tabOrder.map((id) => tabs[id]).filter((tab) => tab !== undefined),
     [tabOrder, tabs],
   );
   const activeTab = tabs[activeTabId] || orderedTabs[0] || null;
   const tabCount = orderedTabs.length;
 
-  const wordCount = useMemo(
-    () =>
-      activeTab?.content.trim()
-        ? activeTab.content.trim().split(/\s+/).length
-        : 0,
-    [activeTab?.content],
-  );
+  const activeContent = activeTab?.content ?? "";
+  const wordCount = useMemo(() => {
+    const trimmed = activeContent.trim();
+    return trimmed ? trimmed.split(/\s+/).length : 0;
+  }, [activeContent]);
 
   if (!rehydrated) {
     return <FullscreenLoading />;

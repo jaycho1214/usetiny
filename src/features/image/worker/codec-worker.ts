@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import Pica from "pica";
+import { Pica } from "pica/pica_main";
 import type { ProcessMessage, WorkerResponse, OutputFormat } from "../types";
 
 /**
@@ -10,15 +10,12 @@ import type { ProcessMessage, WorkerResponse, OutputFormat } from "../types";
  * Encoding: OffscreenCanvas.convertToBlob (JPEG, PNG, WebP, AVIF)
  *
  * Pica configured with:
- *   - createCanvas → OffscreenCanvas (Worker-compatible)
- *   - features: ['js'] — pure JS, no sub-workers (Turbopack safe)
+ *   - pica/pica_main entry — no bundled sub-worker (we're already in one)
+ *   - features: ['js'] — pure JS, no WASM (Turbopack safe)
+ *   - Inside a worker, pica creates OffscreenCanvas on its own
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const pica = new (Pica as any)({
-  features: ["js"],
-  createCanvas: (w: number, h: number) => new OffscreenCanvas(w, h),
-});
+const pica = new Pica({ features: ["js"] });
 
 function computeTargetDimensions(msg: ProcessMessage): {
   width: number;

@@ -23,6 +23,10 @@ export interface CapturedRequest {
   truncated: boolean;
 }
 
+// Stable fallback for selectors: a fresh `[]` per call fails Zustand v5's
+// Object.is check and re-renders forever.
+export const EMPTY_REQUESTS: CapturedRequest[] = [];
+
 export const ENDPOINT_LIMIT = 20;
 export const REQUESTS_PER_ENDPOINT = 200;
 
@@ -91,11 +95,8 @@ export const useWebhookInspectorStore = create<WebhookInspectorStore>()(
       deleteEndpoint: (id) => {
         const state = get();
         if (!state.endpoints[id]) return;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [id]: _e, ...endpoints } = state.endpoints;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [id]: _r, ...requests } = state.requests;
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [id]: _s, ...selectedRequestId } = state.selectedRequestId;
         const endpointOrder = state.endpointOrder.filter((x) => x !== id);
         const activeEndpointId =

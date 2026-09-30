@@ -31,12 +31,14 @@ import {
   SheetContextMenuPortal,
 } from "./spreadsheet-context-menu";
 
-import { defaultTheme } from "@univerjs/presets";
+import {
+  defaultTheme,
+  type CellValue,
+  type FUniver,
+  type Nullable,
+} from "@univerjs/presets";
 import "@univerjs/preset-sheets-core/lib/index.css";
 import "../spreadsheet.css";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UniverAPI = any;
 
 // Neutral monochrome theme matching UseTiny design
 const neutralTheme: typeof defaultTheme = {
@@ -86,9 +88,9 @@ export default function SpreadsheetContent() {
     x: number;
     y: number;
   } | null>(null);
-  const univerAPIRef = useRef<UniverAPI>(null);
+  const [univerAPI, setUniverAPI] = useState<FUniver | null>(null);
   const univerInstanceRef = useRef<{ dispose: () => void } | null>(null);
-  const [ready, setReady] = useState(false);
+  const ready = univerAPI !== null;
 
   // Initialize Univer
   useEffect(() => {
@@ -137,9 +139,8 @@ export default function SpreadsheetContent() {
         univerAPI.createWorkbook({ name: "Spreadsheet" });
       }
 
-      univerAPIRef.current = univerAPI;
       univerInstanceRef.current = univer;
-      setReady(true);
+      setUniverAPI(univerAPI);
     }
 
     init();
@@ -150,7 +151,7 @@ export default function SpreadsheetContent() {
       // while React is still rendering (strict mode double-mount)
       const instance = univerInstanceRef.current;
       univerInstanceRef.current = null;
-      univerAPIRef.current = null;
+      setUniverAPI(null);
       if (instance) {
         queueMicrotask(() => instance.dispose());
       }
@@ -169,7 +170,7 @@ export default function SpreadsheetContent() {
 
       // Sheet tab right-click
       if (
-        target.closest("[data-u=slide-tab-bar]") ||
+        target.closest("[data-u-comp=slide-tab-bar]") ||
         target.closest("footer")
       ) {
         e.preventDefault();
@@ -193,18 +194,17 @@ export default function SpreadsheetContent() {
   }, [ready]);
 
   useEffect(() => {
-    if (!ready || !univerAPIRef.current) return;
-    univerAPIRef.current.toggleDarkMode(resolvedTheme === "dark");
-  }, [resolvedTheme, ready]);
+    univerAPI?.toggleDarkMode(resolvedTheme === "dark");
+  }, [resolvedTheme, univerAPI]);
 
   // Auto-save workbook snapshot (skip if unchanged to avoid localStorage thrashing)
   const lastSnapshotRef = useRef<string>("");
 
   useEffect(() => {
-    if (!ready || !univerAPIRef.current) return;
+    if (!univerAPI) return;
 
     const save = () => {
-      const fWorkbook = univerAPIRef.current?.getActiveWorkbook?.();
+      const fWorkbook = univerAPI.getActiveWorkbook();
       if (!fWorkbook) return;
       const snapshot = fWorkbook.save();
       const hash = JSON.stringify(snapshot);
@@ -222,14 +222,11 @@ export default function SpreadsheetContent() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       save();
     };
-  }, [ready, setWorkbookData]);
+  }, [univerAPI, setWorkbookData]);
 
   // Export XLSX
   const handleExportXLSX = useCallback(async () => {
-    const api = univerAPIRef.current;
-    if (!api) return;
-
-    const fWorkbook = api.getActiveWorkbook();
+    const fWorkbook = univerAPI?.getActiveWorkbook();
     if (!fWorkbook) return;
 
     const XLSX = await import("xlsx");
@@ -251,14 +248,11 @@ export default function SpreadsheetContent() {
 
     XLSX.writeFile(wb, "spreadsheet.xlsx");
     toast.success("Exported as XLSX");
-  }, []);
+  }, [univerAPI]);
 
   // Export CSV (active sheet only)
   const handleExportCSV = useCallback(async () => {
-    const api = univerAPIRef.current;
-    if (!api) return;
-
-    const fWorkbook = api.getActiveWorkbook();
+    const fWorkbook = univerAPI?.getActiveWorkbook();
     if (!fWorkbook) return;
 
     const sheet = fWorkbook.getActiveSheet();
@@ -282,7 +276,7 @@ export default function SpreadsheetContent() {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Exported as CSV");
-  }, []);
+  }, [univerAPI]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -362,7 +356,7 @@ export default function SpreadsheetContent() {
       </div>
 
       {/* Custom Toolbar */}
-      {ready && <SpreadsheetToolbar univerAPI={univerAPIRef.current} />}
+      {ready && <SpreadsheetToolbar univerAPI={univerAPI} />}
 
       {/* Spreadsheet */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
@@ -377,14 +371,14 @@ export default function SpreadsheetContent() {
       {/* Custom context menus */}
       {ctxPosition && ready && (
         <SpreadsheetContextMenuPortal
-          univerAPI={univerAPIRef.current}
+          univerAPI={univerAPI}
           position={ctxPosition}
           onClose={() => setCtxPosition(null)}
         />
       )}
       {sheetCtxPosition && ready && (
         <SheetContextMenuPortal
-          univerAPI={univerAPIRef.current}
+          univerAPI={univerAPI}
           position={sheetCtxPosition}
           onClose={() => setSheetCtxPosition(null)}
         />
@@ -401,9 +395,10 @@ export default function SpreadsheetContent() {
 }
 
 /** Trim trailing empty rows and columns from a 2D array */
-function trimData(
-  data: (string | number | boolean | null | undefined)[][],
-): (string | number | boolean | null | undefined)[][] {
+type Cell = CellValue | null;
+
+function trimData(values: Nullable<CellValue>[][]): Cell[][] {
+  const data = values.map((row) => row.map((cell) => cell ?? null));
   if (!data.length) return data;
 
   // Find last non-empty row
@@ -427,8 +422,6 @@ function trimData(
   return trimmed.map((row) => row.slice(0, lastCol + 1));
 }
 
-function isRowEmpty(
-  row: (string | number | boolean | null | undefined)[],
-): boolean {
+function isRowEmpty(row: Cell[]): boolean {
   return row.every((cell) => cell == null || cell === "");
 }
