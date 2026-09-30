@@ -869,8 +869,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
       }
     }
     setEditingText(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- editingText read inside is intentionally excluded; callback is stored in a ref
-  }, [pageIndex, addAnnotation, updateAnnotation]);
+  }, [editingText, pageIndex, addAnnotation, updateAnnotation]);
 
   const formInputRef = useRef<HTMLInputElement>(null);
 
@@ -887,8 +886,7 @@ export function PDFPageCanvas({ page, pageIndex }: Props) {
       updateAnnotation(ef.id, { label: val || "Field" });
     else updateAnnotation(ef.id, { value: val });
     setEditingForm(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- editingForm read inside is intentionally excluded; callback is stored in a ref
-  }, [updateAnnotation]);
+  }, [editingForm, updateAnnotation]);
   useEffect(() => {
     finalizeTextRef.current = finalizeText;
   }, [finalizeText]);
