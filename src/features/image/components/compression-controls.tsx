@@ -20,6 +20,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
   ChevronDown,
@@ -351,21 +356,20 @@ export function CompressionControls({
 
         {/* ── Metadata ── */}
         {exifData && (
-          <div className="relative px-4 py-2.5">
-            <button
-              className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
-              onClick={() => setMetadataOpen(!metadataOpen)}
-            >
-              Metadata
-              {metadataOpen ? (
-                <ChevronDown className="h-3 w-3" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </button>
-
-            {metadataOpen && (
-              <div className="absolute bottom-full left-0 mb-1 w-64 rounded-md border bg-popover p-3 text-popover-foreground shadow-md z-50">
+          <div className="px-4 py-2.5">
+            {/* Portaled: an absolute child would be clipped by the bar's overflow-x-auto */}
+            <Popover open={metadataOpen} onOpenChange={setMetadataOpen}>
+              <PopoverTrigger asChild>
+                <button className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+                  Metadata
+                  {metadataOpen ? (
+                    <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3" />
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent side="top" align="start" className="w-64 p-3">
                 <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs mb-3">
                   {exifData.make && (
                     <>
@@ -455,8 +459,13 @@ export function CompressionControls({
                     </>
                   )}
                 </div>
-              </div>
-            )}
+                {outputFormat !== "jpeg" && !stripMetadata && (
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    Metadata is only kept for JPEG output.
+                  </p>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </div>

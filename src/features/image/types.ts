@@ -1,3 +1,5 @@
+import type { MetadataOptions } from "./exif";
+
 export type OutputFormat = "jpeg" | "png" | "webp" | "avif";
 
 export type QualityMode = "manual" | "target";
@@ -75,6 +77,7 @@ export interface ProcessMessage {
   targetFormat: OutputFormat;
   quality: number;
   targetSizeKB: number | null;
+  metadata: MetadataOptions;
   resize: {
     mode: ResizeMode;
     width: number | null;

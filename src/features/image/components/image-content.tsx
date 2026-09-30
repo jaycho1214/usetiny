@@ -47,7 +47,12 @@ import {
   RESIZE_PRESETS,
 } from "../constants";
 import { readExif } from "../exif";
-import type { ImageFile, WorkerResponse, ImagePreset } from "../types";
+import type {
+  ImageFile,
+  ImagePreset,
+  ProcessMessage,
+  WorkerResponse,
+} from "../types";
 import { ImageDropzone } from "./image-dropzone";
 import { FileSidebar } from "./file-sidebar";
 import { SplitView } from "./split-view";
@@ -151,6 +156,12 @@ export default function ImageContent() {
             quality: q,
             targetSizeKB:
               state.qualityMode === "target" ? state.targetSizeKB : null,
+            metadata: {
+              stripAll: state.stripMetadata,
+              stripGps: state.stripGps,
+              stripCamera: state.stripCamera,
+              keepCopyright: state.keepCopyright,
+            },
             resize: {
               mode: state.resizeMode,
               width: state.resizeWidth,
@@ -159,7 +170,7 @@ export default function ImageContent() {
               originalWidth: file.originalWidth,
               originalHeight: file.originalHeight,
             },
-          },
+          } satisfies ProcessMessage,
           [buffer],
         );
       })
@@ -236,13 +247,15 @@ export default function ImageContent() {
     processNext();
   }, [processNext]);
 
-  // Skip initial mount to avoid redundant enqueueAll
+  // Skip the mount run to avoid a redundant enqueueAll (loadFiles enqueues
+  // new files itself). Consume the flag before the hasFiles check: otherwise
+  // the first settings change after adding files is the run that gets skipped.
   useEffect(() => {
-    if (!hasFiles) return;
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
+    if (!hasFiles) return;
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       enqueueAll();
@@ -261,6 +274,10 @@ export default function ImageContent() {
     resizeHeight,
     resizePercent,
     resizePresetId,
+    stripMetadata,
+    stripGps,
+    stripCamera,
+    keepCopyright,
   ]);
 
   // ── File loading ──────────────────────────────────────

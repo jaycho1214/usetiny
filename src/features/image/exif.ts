@@ -128,62 +128,75 @@ export async function readExif(buffer: ArrayBuffer): Promise<ExifData | null> {
   }
 }
 
-export async function stripExifFromJpeg(
-  buffer: ArrayBuffer,
-  options: {
-    stripAll: boolean;
-    stripGps: boolean;
-    stripCamera: boolean;
-    keepCopyright: boolean;
-  },
-): Promise<ArrayBuffer> {
+export interface MetadataOptions {
+  stripAll: boolean;
+  stripGps: boolean;
+  stripCamera: boolean;
+  keepCopyright: boolean;
+}
+
+/**
+ * Canvas re-encoding drops all metadata, so anything the user chose to keep
+ * has to be copied from the source JPEG. Returns the filtered EXIF block to
+ * insert into the output, or null when nothing should be kept.
+ */
+export async function buildOutputExif(
+  source: ArrayBuffer,
+  options: MetadataOptions,
+  output: { width: number; height: number },
+): Promise<string | null> {
+  if (options.stripAll) return null;
   try {
     const p = await loadPiexif();
-    const dataUrl = arrayBufferToDataUrl(buffer);
-
-    if (options.stripAll && !options.keepCopyright) {
-      return dataUrlToArrayBuffer(p.remove(dataUrl));
+    const exif = p.load(arrayBufferToDataUrl(source));
+    const zeroth = exif["0th"] ?? {};
+    const exifIFD = exif["Exif"] ?? {};
+    const gps = exif["GPS"] ?? {};
+    if (
+      Object.keys(zeroth).length === 0 &&
+      Object.keys(exifIFD).length === 0 &&
+      Object.keys(gps).length === 0
+    ) {
+      return null;
     }
 
-    const exifObj = p.load(dataUrl);
-
-    if (options.stripAll) {
-      // Keep only copyright
-      const copyright = exifObj["0th"]?.[p.ImageIFD.Copyright];
-      const artist = exifObj["0th"]?.[p.ImageIFD.Artist];
-      const orientation = exifObj["0th"]?.[p.ImageIFD.Orientation];
-      const newExif: Record<string, Record<number, unknown>> = {
-        "0th": {},
-        Exif: {},
-        GPS: {},
-        Interop: {},
-        "1st": {},
-      };
-      if (copyright) newExif["0th"][p.ImageIFD.Copyright] = copyright;
-      if (artist) newExif["0th"][p.ImageIFD.Artist] = artist;
-      if (orientation) newExif["0th"][p.ImageIFD.Orientation] = orientation;
-      const bytes = p.dump(newExif);
-      return dataUrlToArrayBuffer(p.insert(bytes, dataUrl));
-    }
-
-    if (options.stripGps) {
-      exifObj["GPS"] = {};
-    }
-
+    if (options.stripGps) exif["GPS"] = {};
     if (options.stripCamera) {
-      delete exifObj["0th"][p.ImageIFD.Make];
-      delete exifObj["0th"][p.ImageIFD.Model];
-      delete exifObj["0th"][p.ImageIFD.Software];
+      delete zeroth[p.ImageIFD.Make];
+      delete zeroth[p.ImageIFD.Model];
+      delete zeroth[p.ImageIFD.Software];
     }
-
     if (!options.keepCopyright) {
-      delete exifObj["0th"][p.ImageIFD.Copyright];
-      delete exifObj["0th"][p.ImageIFD.Artist];
+      delete zeroth[p.ImageIFD.Copyright];
+      delete zeroth[p.ImageIFD.Artist];
     }
 
-    const bytes = p.dump(exifObj);
-    return dataUrlToArrayBuffer(p.insert(bytes, dataUrl));
+    // Describe the output, not the original: the decoder already applied the
+    // rotation (keeping the tag would rotate twice) and the image may be resized.
+    zeroth[p.ImageIFD.Orientation] = 1;
+    exifIFD[p.ExifIFD.PixelXDimension] = output.width;
+    exifIFD[p.ExifIFD.PixelYDimension] = output.height;
+    exif["0th"] = zeroth;
+    exif["Exif"] = exifIFD;
+    // The embedded thumbnail previews the original image.
+    delete exif["1st"];
+    delete exif.thumbnail;
+
+    return p.dump(exif);
   } catch {
-    return buffer;
+    return null;
   }
+}
+
+/** Bytes that insertExif adds: APP1 marker + length field + EXIF block. */
+export function exifSegmentSize(exif: string): number {
+  return exif.length + 4;
+}
+
+export async function insertExif(
+  jpeg: ArrayBuffer,
+  exif: string,
+): Promise<ArrayBuffer> {
+  const p = await loadPiexif();
+  return dataUrlToArrayBuffer(p.insert(exif, arrayBufferToDataUrl(jpeg)));
 }

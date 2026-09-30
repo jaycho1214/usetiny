@@ -2,12 +2,15 @@
 
 import { Pica } from "pica/pica_main";
 import type { ProcessMessage, WorkerResponse, OutputFormat } from "../types";
+import { buildOutputExif, exifSegmentSize, insertExif } from "../exif";
 
 /**
  * Image processing worker.
  *
  * Resizing: Pica (Lanczos3/mks2013 filter — Squoosh-level quality)
  * Encoding: OffscreenCanvas.convertToBlob (JPEG, PNG, WebP, AVIF)
+ * Metadata: canvas encoding drops EXIF; for JPEG → JPEG the kept fields
+ *           are copied back from the source (see buildOutputExif)
  *
  * Pica configured with:
  *   - pica/pica_main entry — no bundled sub-worker (we're already in one)
@@ -155,6 +158,11 @@ self.onmessage = async (e: MessageEvent<ProcessMessage>) => {
       stage: "encoding",
     } satisfies WorkerResponse);
 
+    const exif =
+      msg.sourceFormat === "jpeg" && msg.targetFormat === "jpeg"
+        ? await buildOutputExif(msg.imageData, msg.metadata, dims)
+        : null;
+
     let encoded: Blob;
     let actualQuality: number | null = null;
 
@@ -163,7 +171,9 @@ self.onmessage = async (e: MessageEvent<ProcessMessage>) => {
       msg.targetFormat !== "png" // PNG is lossless, no quality knob
     ) {
       // Binary search for highest quality under target size
-      const targetBytes = msg.targetSizeKB * 1024;
+      // Reserve room for the EXIF block inserted after encoding
+      const targetBytes =
+        msg.targetSizeKB * 1024 - (exif ? exifSegmentSize(exif) : 0);
       let lo = 1;
       let hi = 100;
       let bestBlob: Blob | null = null;
@@ -196,7 +206,8 @@ self.onmessage = async (e: MessageEvent<ProcessMessage>) => {
       );
     }
 
-    const arrayBuffer = await encoded.arrayBuffer();
+    let arrayBuffer = await encoded.arrayBuffer();
+    if (exif) arrayBuffer = await insertExif(arrayBuffer, exif);
 
     const result: WorkerResponse = {
       type: "result",
