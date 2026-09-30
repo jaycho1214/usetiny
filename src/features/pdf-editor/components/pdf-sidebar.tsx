@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import { ArrowDown, ArrowUp, Copy, RotateCw, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, RotateCw, Trash } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -118,7 +118,7 @@ export function PDFSidebar({ pdfDoc }: Props) {
               className="text-destructive focus:text-destructive"
               onClick={() => handlePageOp(() => deletePage(pdfData!, i))}
             >
-              <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete
+              <Trash className="mr-2 h-3.5 w-3.5" /> Delete
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -127,7 +127,7 @@ export function PDFSidebar({ pdfDoc }: Props) {
   );
 }
 
-const ThumbnailPage = React.memo(function ThumbnailPage({
+const ThumbnailPage = memo(function ThumbnailPage({
   pdfDoc,
   pageIndex,
   isActive,
@@ -177,7 +177,7 @@ const ThumbnailPage = React.memo(function ThumbnailPage({
       )}
     >
       <canvas ref={canvasRef} className="w-full bg-white" />
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3">
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-linear-to-t from-black/60 to-transparent px-1.5 pb-1 pt-3">
         <span className="text-[10px] font-medium text-white/90">
           {pageIndex + 1}
         </span>

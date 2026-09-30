@@ -15,14 +15,14 @@ import {
   type VirtualElement,
 } from "@floating-ui/dom";
 import {
-  forwardRef,
+  type Ref,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
 import {
-  Code2,
+  CodeXml,
   Heading1,
   Heading2,
   Heading3,
@@ -33,7 +33,7 @@ import {
   Minus,
   Quote,
   Table as TableIcon,
-  ChevronDownSquare,
+  SquareChevronDown,
   Video as YoutubeIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -114,7 +114,7 @@ const SLASH_ITEMS: SlashItem[] = [
   {
     title: "Code block",
     description: "Capture a snippet",
-    icon: Code2,
+    icon: CodeXml,
     aliases: ["code", "snippet"],
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
@@ -178,7 +178,7 @@ const SLASH_ITEMS: SlashItem[] = [
   {
     title: "Details",
     description: "Collapsible block",
-    icon: ChevronDownSquare,
+    icon: SquareChevronDown,
     aliases: ["collapse", "toggle"],
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).setDetails().run(),
@@ -203,88 +203,87 @@ interface SlashMenuListHandle {
 interface SlashMenuListProps {
   items: SlashItem[];
   command: (item: SlashItem) => void;
+  ref?: Ref<SlashMenuListHandle>;
 }
 
-const SlashMenuList = forwardRef<SlashMenuListHandle, SlashMenuListProps>(
-  function SlashMenuList({ items, command }, ref) {
-    const [selectedIndex, setSelectedIndex] = useState(0);
-    const [prevItems, setPrevItems] = useState(items);
-    if (prevItems !== items) {
-      setPrevItems(items);
-      setSelectedIndex(0);
-    }
-    const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
-    useEffect(() => {
-      itemRefs.current[selectedIndex]?.scrollIntoView({
-        block: "nearest",
-        inline: "nearest",
-      });
-    }, [selectedIndex]);
+function SlashMenuList({ items, command, ref }: SlashMenuListProps) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [prevItems, setPrevItems] = useState(items);
+  if (prevItems !== items) {
+    setPrevItems(items);
+    setSelectedIndex(0);
+  }
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  useEffect(() => {
+    itemRefs.current[selectedIndex]?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [selectedIndex]);
 
-    useImperativeHandle(ref, () => ({
-      onKeyDown: ({ event }) => {
-        if (event.key === "ArrowUp") {
-          setSelectedIndex((i) => (i + items.length - 1) % items.length);
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }) => {
+      if (event.key === "ArrowUp") {
+        setSelectedIndex((i) => (i + items.length - 1) % items.length);
+        return true;
+      }
+      if (event.key === "ArrowDown") {
+        setSelectedIndex((i) => (i + 1) % items.length);
+        return true;
+      }
+      if (event.key === "Enter") {
+        const item = items[selectedIndex];
+        if (item) {
+          command(item);
           return true;
         }
-        if (event.key === "ArrowDown") {
-          setSelectedIndex((i) => (i + 1) % items.length);
-          return true;
-        }
-        if (event.key === "Enter") {
-          const item = items[selectedIndex];
-          if (item) {
-            command(item);
-            return true;
-          }
-        }
-        return false;
-      },
-    }));
+      }
+      return false;
+    },
+  }));
 
-    if (items.length === 0) {
-      return (
-        <div className="w-64 rounded-md border bg-popover p-2 text-sm text-muted-foreground shadow-md">
-          No results
-        </div>
-      );
-    }
-
+  if (items.length === 0) {
     return (
-      <div className="max-h-72 w-64 overflow-y-auto rounded-md border bg-popover p-1 text-sm shadow-md">
-        {items.map((item, index) => {
-          const Icon = item.icon;
-          const active = index === selectedIndex;
-          return (
-            <button
-              key={item.title}
-              type="button"
-              ref={(el) => {
-                itemRefs.current[index] = el;
-              }}
-              onClick={() => command(item)}
-              onMouseEnter={() => setSelectedIndex(index)}
-              className={cn(
-                "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left",
-                active && "bg-accent text-accent-foreground",
-              )}
-            >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-sm border bg-background">
-                <Icon className="size-3.5" />
-              </span>
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate font-medium">{item.title}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {item.description}
-                </span>
-              </span>
-            </button>
-          );
-        })}
+      <div className="w-64 rounded-md border bg-popover p-2 text-sm text-muted-foreground shadow-md">
+        No results
       </div>
     );
-  },
-);
+  }
+
+  return (
+    <div className="max-h-72 w-64 overflow-y-auto rounded-md border bg-popover p-1 text-sm shadow-md">
+      {items.map((item, index) => {
+        const Icon = item.icon;
+        const active = index === selectedIndex;
+        return (
+          <button
+            key={item.title}
+            type="button"
+            ref={(el) => {
+              itemRefs.current[index] = el;
+            }}
+            onClick={() => command(item)}
+            onMouseEnter={() => setSelectedIndex(index)}
+            className={cn(
+              "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left",
+              active && "bg-accent text-accent-foreground",
+            )}
+          >
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-sm border bg-background">
+              <Icon className="size-3.5" />
+            </span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate font-medium">{item.title}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {item.description}
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 const slashSuggestion: Omit<SuggestionOptions<SlashItem>, "editor"> = {
   char: "/",

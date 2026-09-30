@@ -13,13 +13,11 @@ import {
   Rows3,
   Scissors,
   Split,
-  Trash2,
+  Trash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CMD } from "../commands";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UniverAPI = any;
+import type { FUniver } from "@univerjs/presets";
 
 interface MenuPosition {
   x: number;
@@ -157,7 +155,7 @@ export function SpreadsheetContextMenuPortal({
   position,
   onClose,
 }: {
-  univerAPI: UniverAPI;
+  univerAPI: FUniver;
   position: MenuPosition;
   onClose: () => void;
 }) {
@@ -228,12 +226,12 @@ export function SpreadsheetContextMenuPortal({
       <MenuSeparator />
 
       <MenuItem
-        icon={Trash2}
+        icon={Trash}
         label="Delete row"
         onClick={() => exec(CMD.REMOVE_ROW)}
       />
       <MenuItem
-        icon={Trash2}
+        icon={Trash}
         label="Delete column"
         onClick={() => exec(CMD.REMOVE_COL)}
       />
@@ -276,7 +274,7 @@ export function SheetContextMenuPortal({
   position,
   onClose,
 }: {
-  univerAPI: UniverAPI;
+  univerAPI: FUniver;
   position: MenuPosition;
   onClose: () => void;
 }) {
@@ -286,12 +284,12 @@ export function SheetContextMenuPortal({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const getWorkbook = useCallback(() => {
-    return univerAPI?.getActiveWorkbook?.();
+    return univerAPI.getActiveWorkbook();
   }, [univerAPI]);
 
   const handleRename = useCallback(() => {
     // Trigger Univer's inline rename on the active sheet tab
-    univerAPI?.executeCommand?.(CMD.RENAME_SHEET);
+    univerAPI.executeCommand(CMD.RENAME_SHEET);
     onClose();
   }, [univerAPI, onClose]);
 
@@ -369,7 +367,7 @@ export function SheetContextMenuPortal({
       <MenuItem icon={FilePlus} label="New sheet" onClick={handleNewSheet} />
       <MenuSeparator />
       <MenuItem
-        icon={Trash2}
+        icon={Trash}
         label="Delete sheet"
         onClick={() => setConfirmDelete(true)}
       />

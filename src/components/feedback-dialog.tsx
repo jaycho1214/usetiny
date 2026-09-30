@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2Icon, MessageSquare } from "lucide-react";
+import { useActionState, useState } from "react";
+import posthog from "posthog-js";
+import { LoaderCircle, MessageSquare } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,95 +29,68 @@ import { toast } from "sonner";
 
 const SURVEY_ID = "019a95b4-b799-0000-581c-00eb63b58605";
 
-function getPostHog() {
-  return import("posthog-js").then((m) => m.default);
-}
-
 export function FeedbackDialog() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmClose, setShowConfirmClose] = useState(false);
 
   const hasContent = email.trim() !== "" || feedback.trim() !== "";
 
-  const handleClose = useCallback(() => {
+  const dismiss = () => {
+    setOpen(false);
+    posthog.capture("survey dismissed", { $survey_id: SURVEY_ID });
+  };
+
+  const handleClose = () => {
     if (hasContent) {
       setShowConfirmClose(true);
     } else {
-      setOpen(false);
+      dismiss();
     }
-  }, [hasContent]);
+  };
 
-  const confirmClose = useCallback(() => {
+  const confirmClose = () => {
     setEmail("");
     setFeedback("");
     setShowConfirmClose(false);
-    setOpen(false);
-  }, []);
+    dismiss();
+  };
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      if (!feedback.trim()) {
-        toast.error("Please enter your feedback");
-        return;
-      }
-
-      setIsSubmitting(true);
-
-      // Simulate API call - replace with actual API endpoint
-      try {
-        const posthog = await getPostHog();
-        posthog.capture(
-          "survey sent",
-          {
-            $survey_id: SURVEY_ID,
-            "$survey_response_ea08f708-00f8-4b7b-b608-021464233168": email,
-            "$survey_response_b34af35d-3096-4a62-87e0-8dad505210d5": feedback,
-          },
-          { send_instantly: true },
-        );
-
-        toast.success("Thank you for your feedback!");
-        setEmail("");
-        setFeedback("");
-        setOpen(false);
-      } catch {
-        toast.error("Failed to submit feedback. Please try again.");
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [email, feedback],
-  );
-
-  const handleOpenChange = useCallback(
-    (isOpen: boolean) => {
-      if (!isOpen) {
-        handleClose();
-      } else {
-        setOpen(true);
-      }
-    },
-    [handleClose],
-  );
-
-  const prevOpenRef = useRef(false);
-  useEffect(() => {
-    if (open) {
-      getPostHog().then((ph) =>
-        ph.capture("survey shown", { $survey_id: SURVEY_ID }),
-      );
-    } else if (prevOpenRef.current) {
-      getPostHog().then((ph) =>
-        ph.capture("survey dismissed", { $survey_id: SURVEY_ID }),
-      );
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      handleClose();
+      return;
     }
-    prevOpenRef.current = open;
-  }, [open]);
+    setOpen(true);
+    posthog.capture("survey shown", { $survey_id: SURVEY_ID });
+  };
+
+  const [, submitAction, isSubmitting] = useActionState(async () => {
+    if (!feedback.trim()) {
+      toast.error("Please enter your feedback");
+      return;
+    }
+
+    try {
+      posthog.capture(
+        "survey sent",
+        {
+          $survey_id: SURVEY_ID,
+          "$survey_response_ea08f708-00f8-4b7b-b608-021464233168": email,
+          "$survey_response_b34af35d-3096-4a62-87e0-8dad505210d5": feedback,
+        },
+        { send_instantly: true },
+      );
+
+      toast.success("Thank you for your feedback!");
+      setEmail("");
+      setFeedback("");
+      setOpen(false);
+    } catch {
+      toast.error("Failed to submit feedback. Please try again.");
+    }
+  }, undefined);
 
   return (
     <>
@@ -135,7 +109,7 @@ export function FeedbackDialog() {
               improve!
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action={submitAction} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email (optional)</Label>
               <Input
@@ -165,7 +139,7 @@ export function FeedbackDialog() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2Icon className="animate-spin" />}
+                {isSubmitting && <LoaderCircle className="animate-spin" />}
                 Send Feedback
               </Button>
             </div>

@@ -1,11 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { IWorkbookData } from "@univerjs/presets";
 
 interface SpreadsheetStore {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  workbookData: Record<string, any> | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setWorkbookData: (data: Record<string, any>) => void;
+  workbookData: IWorkbookData | null;
+  setWorkbookData: (data: IWorkbookData) => void;
 }
 
 export const useSpreadsheetStore = create<SpreadsheetStore>()(

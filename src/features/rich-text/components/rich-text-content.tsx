@@ -1,6 +1,6 @@
 "use client";
 
-import { useRichTextStore, isEmptyDoc, type RichTextTab } from "../store";
+import { useRichTextStore, isEmptyDoc } from "../store";
 import { useIsMac } from "@/hooks/use-is-mac";
 import { useTabKeyboardShortcuts } from "@/hooks/use-tab-keyboard-shortcuts";
 import { Editor, type EditorHandle } from "./editor";
@@ -100,7 +100,7 @@ export default function RichTextContent() {
 
   const orderedTabs = tabOrder
     .map((id) => tabs[id])
-    .filter((tab): tab is RichTextTab => Boolean(tab));
+    .filter((tab) => tab !== undefined);
   const activeTab = tabs[activeTabId] || orderedTabs[0] || null;
   const tabCount = orderedTabs.length;
 

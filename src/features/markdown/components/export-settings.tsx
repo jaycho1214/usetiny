@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useMarkdownStore } from "../store";
 import type { PageSize, Orientation, Margins } from "../store";
 import { extractTitle } from "../export-pdf";
@@ -38,8 +37,10 @@ const margins: { value: Margins; label: string }[] = [
 ];
 
 export function ExportSettings() {
-  const { exportSettings, updateExportSettings, content } = useMarkdownStore();
-  const suggestedFilename = useMemo(() => extractTitle(content), [content]);
+  const exportSettings = useMarkdownStore((s) => s.exportSettings);
+  const updateExportSettings = useMarkdownStore((s) => s.updateExportSettings);
+  // Select the derived string so typing only re-renders when the title changes.
+  const suggestedFilename = useMarkdownStore((s) => extractTitle(s.content));
 
   return (
     <Popover>

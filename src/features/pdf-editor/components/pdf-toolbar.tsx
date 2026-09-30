@@ -15,7 +15,7 @@ import {
   Check,
   Download,
   Eraser,
-  FormInput,
+  RectangleEllipsis,
   Highlighter,
   Keyboard,
   MousePointer2,
@@ -23,7 +23,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Redo2,
-  Trash2,
+  Trash,
   Type,
   Undo2,
   X,
@@ -92,7 +92,7 @@ const editTools: {
   },
   {
     id: "form",
-    icon: <FormInput className="h-4 w-4" />,
+    icon: <RectangleEllipsis className="h-4 w-4" />,
     label: "Form",
     shortcut: "F",
   },
@@ -471,7 +471,7 @@ export function PDFToolbar({
                   tooltip="Clear all"
                   className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </Btn>
               </span>
             </AlertDialogTrigger>

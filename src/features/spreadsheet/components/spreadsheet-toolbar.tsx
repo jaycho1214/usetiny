@@ -22,14 +22,14 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
+  TextAlignCenter,
+  TextAlignStart,
+  TextAlignEnd,
   Bold,
   ChevronDown,
   Combine,
   Eraser,
-  Grid3X3,
+  Grid3x3,
   Italic,
   PaintBucket,
   Redo2,
@@ -38,16 +38,14 @@ import {
   Type,
   Underline,
   Undo2,
-  WrapText,
+  TextWrap,
 } from "lucide-react";
 import { CMD, COLORS, FONT_FAMILIES, FONT_SIZES, H_ALIGN } from "../commands";
 import { useCallback, useState } from "react";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type UniverAPI = any;
+import type { FUniver } from "@univerjs/presets";
 
 interface SpreadsheetToolbarProps {
-  univerAPI: UniverAPI;
+  univerAPI: FUniver;
 }
 
 // ── Primitives ──────────────────────────────────────────
@@ -246,22 +244,22 @@ function StartTab({ exec }: { exec: (cmd: string, params?: unknown) => void }) {
         tooltip="Align left"
         onClick={() => exec(CMD.H_ALIGN, { value: H_ALIGN.LEFT })}
       >
-        <AlignLeft className="h-3.5 w-3.5" />
+        <TextAlignStart className="h-3.5 w-3.5" />
       </Btn>
       <Btn
         tooltip="Align center"
         onClick={() => exec(CMD.H_ALIGN, { value: H_ALIGN.CENTER })}
       >
-        <AlignCenter className="h-3.5 w-3.5" />
+        <TextAlignCenter className="h-3.5 w-3.5" />
       </Btn>
       <Btn
         tooltip="Align right"
         onClick={() => exec(CMD.H_ALIGN, { value: H_ALIGN.RIGHT })}
       >
-        <AlignRight className="h-3.5 w-3.5" />
+        <TextAlignEnd className="h-3.5 w-3.5" />
       </Btn>
       <Btn tooltip="Wrap text" onClick={() => exec(CMD.TEXT_WRAP)}>
-        <WrapText className="h-3.5 w-3.5" />
+        <TextWrap className="h-3.5 w-3.5" />
       </Btn>
 
       <Separator orientation="vertical" className="mx-1 h-5" />
@@ -296,7 +294,7 @@ function StartTab({ exec }: { exec: (cmd: string, params?: unknown) => void }) {
 
       {/* Border */}
       <Btn tooltip="Borders" onClick={() => exec(CMD.BORDER)}>
-        <Grid3X3 className="h-3.5 w-3.5" />
+        <Grid3x3 className="h-3.5 w-3.5" />
       </Btn>
 
       <Separator orientation="vertical" className="mx-1 h-5" />
@@ -353,10 +351,10 @@ const COMMON_FORMULAS = [
   { name: "NOW", desc: "Current date/time", template: "=NOW()" },
 ];
 
-function FormulasTab({ univerAPI }: { univerAPI: UniverAPI }) {
+function FormulasTab({ univerAPI }: { univerAPI: FUniver }) {
   const insertFormula = useCallback(
     (template: string) => {
-      const wb = univerAPI?.getActiveWorkbook?.();
+      const wb = univerAPI.getActiveWorkbook();
       if (!wb) return;
       const sheet = wb.getActiveSheet();
       if (!sheet) return;

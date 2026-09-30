@@ -122,7 +122,7 @@ const initialState = {
 
 function pushUndo(state: PDFEditorState) {
   // Share pdfData reference with previous snapshot if unchanged (saves memory)
-  const prevSnap = state._undoStack[state._undoStack.length - 1];
+  const prevSnap = state._undoStack.at(-1);
   const pdfRef =
     prevSnap && prevSnap.pdfData === state.pdfData
       ? prevSnap.pdfData
@@ -315,8 +315,8 @@ export const usePDFEditorStore = create<PDFEditorState>()(
 
       undo: () =>
         set((state) => {
-          if (state._undoStack.length === 0) return state;
-          const prev = state._undoStack[state._undoStack.length - 1];
+          const prev = state._undoStack.at(-1);
+          if (!prev) return state;
           const current: Snapshot = {
             annotations: state.annotations,
             pdfData: state.pdfData,
@@ -335,8 +335,8 @@ export const usePDFEditorStore = create<PDFEditorState>()(
         }),
       redo: () =>
         set((state) => {
-          if (state._redoStack.length === 0) return state;
-          const next = state._redoStack[state._redoStack.length - 1];
+          const next = state._redoStack.at(-1);
+          if (!next) return state;
           const current: Snapshot = {
             annotations: state.annotations,
             pdfData: state.pdfData,

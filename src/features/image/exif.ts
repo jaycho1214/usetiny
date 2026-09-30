@@ -1,13 +1,11 @@
 import type { ExifData } from "./types";
 
-// piexifjs is untyped — declare minimal interface
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let piexif: any = null;
+// Minimal types for piexifjs live in ./piexifjs.d.ts
+type Piexif = typeof import("piexifjs").default;
+let piexif: Piexif | null = null;
 
 async function loadPiexif() {
-  if (!piexif) {
-    piexif = (await import("piexifjs")).default;
-  }
+  piexif ??= (await import("piexifjs")).default;
   return piexif;
 }
 
@@ -31,8 +29,32 @@ function dataUrlToArrayBuffer(dataUrl: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-function gpsToDecimal(ref: string, coords: [number, number][]): number | null {
-  if (!coords || coords.length < 3) return null;
+type Rational = [number, number];
+
+// piexif returns loosely typed IFD values — narrow them at the boundary.
+function asString(v: unknown): string | null {
+  return typeof v === "string" && v ? v : null;
+}
+
+function asNumber(v: unknown): number | null {
+  return typeof v === "number" ? v : null;
+}
+
+function isRational(v: unknown): v is Rational {
+  return (
+    Array.isArray(v) &&
+    v.length === 2 &&
+    typeof v[0] === "number" &&
+    typeof v[1] === "number"
+  );
+}
+
+function asRationalList(v: unknown): Rational[] | null {
+  return Array.isArray(v) && v.every(isRational) ? v : null;
+}
+
+function gpsToDecimal(ref: string, coords: Rational[]): number | null {
+  if (coords.length < 3) return null;
   const [degN, degD] = coords[0];
   const [minN, minD] = coords[1];
   const [secN, secD] = coords[2];
@@ -44,9 +66,7 @@ function gpsToDecimal(ref: string, coords: [number, number][]): number | null {
   return Math.round(decimal * 10000) / 10000;
 }
 
-function rationalToString(val: [number, number] | undefined): string | null {
-  if (!val) return null;
-  const [n, d] = val;
+function rationalToString([n, d]: Rational): string | null {
   if (d === 0) return null;
   return `${n / d}`;
 }
@@ -69,44 +89,39 @@ export async function readExif(buffer: ArrayBuffer): Promise<ExifData | null> {
     const exifIFD = exifObj["Exif"] || {};
     const gps = exifObj["GPS"] || {};
 
-    let lat: number | null = null;
-    let lng: number | null = null;
-    if (gps[p.GPSIFD.GPSLatitude] && gps[p.GPSIFD.GPSLatitudeRef]) {
-      lat = gpsToDecimal(
-        gps[p.GPSIFD.GPSLatitudeRef],
-        gps[p.GPSIFD.GPSLatitude],
-      );
-    }
-    if (gps[p.GPSIFD.GPSLongitude] && gps[p.GPSIFD.GPSLongitudeRef]) {
-      lng = gpsToDecimal(
-        gps[p.GPSIFD.GPSLongitudeRef],
-        gps[p.GPSIFD.GPSLongitude],
-      );
-    }
+    const latRef = asString(gps[p.GPSIFD.GPSLatitudeRef]);
+    const latRaw = asRationalList(gps[p.GPSIFD.GPSLatitude]);
+    const lngRef = asString(gps[p.GPSIFD.GPSLongitudeRef]);
+    const lngRaw = asRationalList(gps[p.GPSIFD.GPSLongitude]);
+    const lat = latRef && latRaw ? gpsToDecimal(latRef, latRaw) : null;
+    const lng = lngRef && lngRaw ? gpsToDecimal(lngRef, lngRaw) : null;
 
-    const isoVal = exifIFD[p.ExifIFD.ISOSpeedRatings];
     const apertureRaw = exifIFD[p.ExifIFD.FNumber];
     const shutterRaw = exifIFD[p.ExifIFD.ExposureTime];
     const focalRaw = exifIFD[p.ExifIFD.FocalLength];
 
     return {
-      make: zeroth[p.ImageIFD.Make] || null,
-      model: zeroth[p.ImageIFD.Model] || null,
-      dateTaken: exifIFD[p.ExifIFD.DateTimeOriginal] || null,
+      make: asString(zeroth[p.ImageIFD.Make]),
+      model: asString(zeroth[p.ImageIFD.Model]),
+      dateTaken: asString(exifIFD[p.ExifIFD.DateTimeOriginal]),
       gpsLatitude: lat,
       gpsLongitude: lng,
-      width: exifIFD[p.ExifIFD.PixelXDimension] || 0,
-      height: exifIFD[p.ExifIFD.PixelYDimension] || 0,
-      iso: typeof isoVal === "number" ? isoVal : null,
-      aperture: apertureRaw ? `f/${rationalToString(apertureRaw)}` : null,
-      shutterSpeed: shutterRaw
+      width: asNumber(exifIFD[p.ExifIFD.PixelXDimension]) ?? 0,
+      height: asNumber(exifIFD[p.ExifIFD.PixelYDimension]) ?? 0,
+      iso: asNumber(exifIFD[p.ExifIFD.ISOSpeedRatings]),
+      aperture: isRational(apertureRaw)
+        ? `f/${rationalToString(apertureRaw)}`
+        : null,
+      shutterSpeed: isRational(shutterRaw)
         ? shutterRaw[0] < shutterRaw[1]
           ? `1/${Math.round(shutterRaw[1] / shutterRaw[0])}s`
           : `${shutterRaw[0] / shutterRaw[1]}s`
         : null,
-      focalLength: focalRaw ? `${rationalToString(focalRaw)}mm` : null,
-      copyright: zeroth[p.ImageIFD.Copyright] || null,
-      orientation: zeroth[p.ImageIFD.Orientation] || null,
+      focalLength: isRational(focalRaw)
+        ? `${rationalToString(focalRaw)}mm`
+        : null,
+      copyright: asString(zeroth[p.ImageIFD.Copyright]),
+      orientation: asNumber(zeroth[p.ImageIFD.Orientation]) || null,
     };
   } catch {
     return null;

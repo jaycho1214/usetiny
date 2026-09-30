@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Check, Loader2, Plus, Trash2, X } from "lucide-react";
+import { Check, LoaderCircle, Plus, Trash, X } from "lucide-react";
 import { formatBytes, computeSavings, openImagePicker } from "../constants";
 import type { ImageFile } from "../types";
 
@@ -25,7 +25,9 @@ interface FileSidebarProps {
 function StatusIcon({ status }: { status: ImageFile["status"] }) {
   switch (status) {
     case "processing":
-      return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
+      return (
+        <LoaderCircle className="h-3 w-3 animate-spin text-muted-foreground" />
+      );
     case "done":
       return <Check className="h-3 w-3 text-emerald-500" />;
     case "error":
@@ -77,7 +79,7 @@ export function FileSidebar({
                 className="h-6 w-6"
                 onClick={onClearAll}
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">Clear all</TooltipContent>
@@ -112,7 +114,7 @@ export function FileSidebar({
                 )}
               >
                 {/* Thumbnail */}
-                <div className="relative h-9 w-9 flex-shrink-0 overflow-hidden rounded border bg-muted">
+                <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded border bg-muted">
                   {file.thumbnailUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import posthog from "posthog-js";
 import { CornerDownLeft } from "lucide-react";
 import { toast } from "sonner";
 import { allTools } from "@/lib/tools";
@@ -31,10 +32,6 @@ import { cn } from "@/lib/utils";
 
 const SURVEY_ID = "019d7073-2cb6-0000-7914-626198509c6b";
 const RESPONSE_KEY = "$survey_response_948e0419-c1dc-4b8f-9bbc-b227c2ebe21f";
-
-function getPostHog() {
-  return import("posthog-js").then((m) => m.default);
-}
 
 export function CommandPalette() {
   const [commandOpen, setCommandOpen] = useState(false);
@@ -57,11 +54,10 @@ export function CommandPalette() {
 
   const noResults = filteredTools.length === 0 && search.length > 0;
 
-  const submitRequest = useCallback(async (query: string) => {
+  const submitRequest = useCallback((query: string) => {
     setCommandOpen(false);
     try {
-      const ph = await getPostHog();
-      ph.capture(
+      posthog.capture(
         "survey sent",
         { $survey_id: SURVEY_ID, [RESPONSE_KEY]: query },
         { send_instantly: true },
@@ -74,9 +70,7 @@ export function CommandPalette() {
 
   useEffect(() => {
     if (noResults) {
-      getPostHog().then((ph) =>
-        ph.capture("survey shown", { $survey_id: SURVEY_ID }),
-      );
+      posthog.capture("survey shown", { $survey_id: SURVEY_ID });
     }
   }, [noResults]);
 
@@ -199,14 +193,14 @@ export function CommandPalette() {
             <div
               aria-hidden
               className={cn(
-                "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-popover via-popover/80 to-transparent transition-opacity duration-300",
+                "pointer-events-none absolute inset-x-0 top-0 h-8 bg-linear-to-b from-popover via-popover/80 to-transparent transition-opacity duration-300",
                 canScrollUp ? "opacity-100" : "opacity-0",
               )}
             />
             <div
               aria-hidden
               className={cn(
-                "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-popover via-popover/80 to-transparent transition-opacity duration-300",
+                "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-popover via-popover/80 to-transparent transition-opacity duration-300",
                 canScrollDown ? "opacity-100" : "opacity-0",
               )}
             />

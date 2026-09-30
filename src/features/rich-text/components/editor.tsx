@@ -3,9 +3,10 @@
 import "../editor.css";
 
 import {
-  forwardRef,
+  type Ref,
   useCallback,
   useEffect,
+  useEffectEvent,
   useImperativeHandle,
   useRef,
 } from "react";
@@ -54,12 +55,17 @@ interface EditorProps {
   onUpdate: (json: JSONContent) => void;
   onReady?: (editor: TiptapEditor) => void;
   placeholder?: string;
+  ref?: Ref<EditorHandle>;
 }
 
-export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
-  { tabId, initialContent, onUpdate, onReady, placeholder },
+export function Editor({
+  tabId,
+  initialContent,
+  onUpdate,
+  onReady,
+  placeholder,
   ref,
-) {
+}: EditorProps) {
   const onUpdateRef = useRef(onUpdate);
   const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingJson = useRef<JSONContent | null>(null);
@@ -153,14 +159,18 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
     }
   }, [editor, onReady]);
 
+  // Load content only when the tab changes; initialContent is read as the
+  // latest value, not a trigger (it changes on every save).
+  const loadTabContent = useEffectEvent((ed: TiptapEditor) => {
+    flushPending();
+    ed.commands.setContent(initialContent ?? "", { emitUpdate: false });
+  });
   const lastSyncedTabId = useRef<string | null>(null);
   useEffect(() => {
     if (!editor) return;
     if (lastSyncedTabId.current === tabId) return;
-    flushPending();
-    editor.commands.setContent(initialContent ?? "", { emitUpdate: false });
+    loadTabContent(editor);
     lastSyncedTabId.current = tabId;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabId, editor]);
 
   useEffect(() => {
@@ -182,4 +192,4 @@ export const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
       <EditorContent editor={editor} className="flex flex-1 flex-col" />
     </>
   );
-});
+}

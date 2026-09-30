@@ -16,10 +16,10 @@ import Link from "next/link";
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "production") {
@@ -42,7 +42,7 @@ export default function Error({
         </EmptyHeader>
         <EmptyContent>
           <div className="flex gap-2">
-            <Button onClick={reset}>Try again</Button>
+            <Button onClick={() => retry()}>Try again</Button>
             <Button variant="outline" asChild>
               <Link href="/">Go home</Link>
             </Button>

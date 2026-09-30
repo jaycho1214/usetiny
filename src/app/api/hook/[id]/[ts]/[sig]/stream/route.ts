@@ -11,11 +11,10 @@ export const dynamic = "force-dynamic";
 
 const HEARTBEAT_MS = 25_000;
 
-type RouteContext = {
-  params: Promise<{ id: string; ts: string; sig: string }>;
-};
-
-export async function GET(req: Request, ctx: RouteContext) {
+export async function GET(
+  req: Request,
+  ctx: RouteContext<"/api/hook/[id]/[ts]/[sig]/stream">,
+) {
   const { id, ts, sig } = await ctx.params;
   const createdAt = Number(ts);
   if (!Number.isFinite(createdAt) || !verifyEndpoint(id, createdAt, sig)) {

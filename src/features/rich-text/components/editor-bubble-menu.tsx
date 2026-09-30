@@ -4,10 +4,10 @@ import { useState } from "react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { type Editor, useEditorState } from "@tiptap/react";
 import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
+  TextAlignCenter,
+  TextAlignJustify,
+  TextAlignStart,
+  TextAlignEnd,
   Bold,
   Code,
   Highlighter,
@@ -200,7 +200,7 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
               onClick={() => editor.chain().focus().setTextAlign("left").run()}
               label="Align left"
             >
-              <AlignLeft className="size-3.5" />
+              <TextAlignStart className="size-3.5" />
             </BubbleButton>
             <BubbleButton
               active={state.alignCenter}
@@ -209,14 +209,14 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
               }
               label="Align center"
             >
-              <AlignCenter className="size-3.5" />
+              <TextAlignCenter className="size-3.5" />
             </BubbleButton>
             <BubbleButton
               active={state.alignRight}
               onClick={() => editor.chain().focus().setTextAlign("right").run()}
               label="Align right"
             >
-              <AlignRight className="size-3.5" />
+              <TextAlignEnd className="size-3.5" />
             </BubbleButton>
             <BubbleButton
               active={state.alignJustify}
@@ -225,7 +225,7 @@ export function EditorBubbleMenu({ editor }: EditorBubbleMenuProps) {
               }
               label="Justify"
             >
-              <AlignJustify className="size-3.5" />
+              <TextAlignJustify className="size-3.5" />
             </BubbleButton>
           </>
         )}

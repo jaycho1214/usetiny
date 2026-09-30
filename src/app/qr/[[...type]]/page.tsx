@@ -71,9 +71,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({
   params,
-}: {
-  params: Promise<{ type?: string[] }>;
-}): Promise<Metadata> {
+}: PageProps<"/qr/[[...type]]">): Promise<Metadata> {
   const resolvedParams = await params;
   const qrType = resolveType(resolvedParams);
   const meta = typeMeta[qrType];
@@ -96,11 +94,7 @@ const jsonLdBase = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 
-export default async function QRPage({
-  params,
-}: {
-  params: Promise<{ type?: string[] }>;
-}) {
+export default async function QRPage({ params }: PageProps<"/qr/[[...type]]">) {
   const resolvedParams = await params;
   const qrType = resolveType(resolvedParams);
   const meta = typeMeta[qrType];

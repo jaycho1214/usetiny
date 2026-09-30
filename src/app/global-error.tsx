@@ -5,10 +5,10 @@ import { useEffect } from "react";
 
 export default function GlobalError({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     if (process.env.NODE_ENV === "production") {
@@ -77,7 +77,7 @@ export default function GlobalError({
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button
-              onClick={reset}
+              onClick={() => retry()}
               style={{
                 padding: "8px 16px",
                 fontSize: 14,

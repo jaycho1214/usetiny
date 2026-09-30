@@ -2,7 +2,7 @@ import {
   FileDown,
   FileText,
   ImageDown,
-  LetterText,
+  TextInitial,
   NotepadText,
   Pilcrow,
   QrCode,
@@ -67,7 +67,7 @@ export const allTools: Tool[] = [
   {
     name: "Word Counter",
     description: "Count words, characters, sentences, and reading time",
-    icon: LetterText,
+    icon: TextInitial,
     href: "/word-counter",
     addedAt: "2026-04-10",
   },
