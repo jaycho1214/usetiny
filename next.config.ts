@@ -4,13 +4,18 @@ import { withPostHogConfig } from "@posthog/nextjs-config";
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
+      // Static and array rules must precede the catch-all.
       {
-        source: "/relay-aqZo/static/(.*)",
-        destination: "https://us-assets.i.posthog.com/static/$1",
+        source: "/relay-aqZo/static/:path*",
+        destination: "https://us-assets.i.posthog.com/static/:path*",
       },
       {
-        source: "/relay-aqZo/(.*)",
-        destination: "https://us.i.posthog.com/$1",
+        source: "/relay-aqZo/array/:path*",
+        destination: "https://us-assets.i.posthog.com/array/:path*",
+      },
+      {
+        source: "/relay-aqZo/:path*",
+        destination: "https://us.i.posthog.com/:path*",
       },
     ];
   },
