@@ -37,3 +37,13 @@
 .spreadsheet-host {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* ── Hide Univer's notification toaster ──
+   Univer mounts an id-less sonner <Toaster> that shares sonner's queue with
+   the app's <Toaster>, so every toast rendered (and was announced) twice.
+   The app's toaster already shows them. Keep Univer's top-center Messager,
+   which only renders its own id-scoped messages. */
+.spreadsheet-host
+  [data-sonner-toaster]:not([data-y-position="top"][data-x-position="center"]) {
+  display: none !important;
+}
