@@ -8,6 +8,7 @@ import Suggestion, {
   type SuggestionKeyDownProps,
 } from "@tiptap/suggestion";
 import {
+  autoUpdate,
   computePosition,
   flip,
   offset as fuiOffset,
@@ -299,18 +300,18 @@ const slashSuggestion: Omit<SuggestionOptions<SlashItem>, "editor"> = {
       SlashMenuListProps
     > | null = null;
     let popupEl: HTMLDivElement | null = null;
-    let cleanup: (() => void) | null = null;
+    let latest: SuggestionProps<SlashItem> | null = null;
+    let stopTracking: (() => void) | null = null;
 
-    const positionPopup = (
-      clientRect: (() => DOMRect | null) | null | undefined,
-    ) => {
-      if (!popupEl || !clientRect) return;
-      const rect = clientRect();
-      if (!rect) return;
-      const virtual: VirtualElement = {
-        getBoundingClientRect: () => rect,
-      };
-      computePosition(virtual, popupEl, {
+    // Reads the latest suggestion rect lazily, so every update measures where
+    // the "/" is now rather than where it was when the menu opened.
+    const reference: VirtualElement = {
+      getBoundingClientRect: () => latest?.clientRect?.() ?? new DOMRect(),
+    };
+
+    const updatePosition = () => {
+      if (!popupEl) return;
+      computePosition(reference, popupEl, {
         placement: "bottom-start",
         middleware: [fuiOffset(6), flip(), shift({ padding: 8 })],
       }).then(({ x, y }) => {
@@ -318,6 +319,33 @@ const slashSuggestion: Omit<SuggestionOptions<SlashItem>, "editor"> = {
         popupEl.style.left = `${x}px`;
         popupEl.style.top = `${y}px`;
       });
+    };
+
+    // autoUpdate re-positions on scroll, resize and layout shifts of the
+    // context element (e.g. content above the editor collapsing after the
+    // first save), not just when the suggestion itself changes.
+    const track = (props: SuggestionProps<SlashItem>) => {
+      latest = props;
+      const node = props.decorationNode ?? props.editor.view.dom;
+      if (node === reference.contextElement) {
+        updatePosition();
+        return;
+      }
+      stopTracking?.();
+      reference.contextElement = node;
+      if (popupEl)
+        stopTracking = autoUpdate(reference, popupEl, updatePosition);
+    };
+
+    const destroy = () => {
+      stopTracking?.();
+      popupEl?.remove();
+      renderer?.destroy();
+      renderer = null;
+      popupEl = null;
+      latest = null;
+      stopTracking = null;
+      reference.contextElement = undefined;
     };
 
     return {
@@ -336,43 +364,23 @@ const slashSuggestion: Omit<SuggestionOptions<SlashItem>, "editor"> = {
         popupEl.style.zIndex = "50";
         popupEl.appendChild(renderer.element);
         document.body.appendChild(popupEl);
-        positionPopup(props.clientRect);
-
-        const onScroll = () => positionPopup(props.clientRect);
-        window.addEventListener("scroll", onScroll, true);
-        window.addEventListener("resize", onScroll);
-        cleanup = () => {
-          window.removeEventListener("scroll", onScroll, true);
-          window.removeEventListener("resize", onScroll);
-        };
+        track(props);
       },
       onUpdate: (props: SuggestionProps<SlashItem>) => {
         renderer?.updateProps({
           items: props.items,
           command: (item: SlashItem) => props.command(item),
         });
-        positionPopup(props.clientRect);
+        track(props);
       },
       onKeyDown: (props: SuggestionKeyDownProps) => {
         if (props.event.key === "Escape") {
-          cleanup?.();
-          popupEl?.remove();
-          renderer?.destroy();
-          renderer = null;
-          popupEl = null;
-          cleanup = null;
+          destroy();
           return true;
         }
         return renderer?.ref?.onKeyDown(props) ?? false;
       },
-      onExit: () => {
-        cleanup?.();
-        popupEl?.remove();
-        renderer?.destroy();
-        renderer = null;
-        popupEl = null;
-        cleanup = null;
-      },
+      onExit: destroy,
     };
   },
 };
