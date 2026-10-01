@@ -25,10 +25,12 @@ export type GridPatch = Partial<
 
 /** Mutations addressed by column index (0–6, display order). */
 export interface GridOps {
-  /** Returns the new block's id, or null when the add was refused. */
-  create(col: number, start: number, end: number): string | null;
+  /** The new block's id and the history entry of its add, or null when refused. */
+  create(col: number, start: number, end: number): { id: string; entryId: number } | null;
   update(col: number, id: string, patch: GridPatch, label?: string): void;
   move(fromCol: number, id: string, toCol: number, start: number, end: number): void;
   remove(col: number, id: string): void;
   duplicate(col: number, id: string): void;
+  /** Erase a history entry if it is still the latest change. */
+  discard(entryId: number): boolean;
 }

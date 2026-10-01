@@ -79,3 +79,31 @@ test("only data and settings are persisted, never history", () => {
     "weekStartsOn",
   ]);
 });
+
+test("discardIfLatest removes its own change without leaving undo or redo", () => {
+  const added = store().commit("Add category", (d) => addCategory(d, { id: "x", name: "X", color: "lime" }));
+  if (!added.ok || added.entryId === null) assert.fail("expected a history entry");
+  assert.equal(store().discardIfLatest(added.entryId), true);
+  assert.equal(store().categories.some((c) => c.id === "x"), false);
+  assert.equal(store().history.past.length, 0);
+  assert.equal(store().history.future.length, 0);
+});
+
+test("discardIfLatest refuses once a newer change exists", () => {
+  const added = store().commit("Add category", (d) => addCategory(d, { id: "x", name: "X", color: "lime" }));
+  if (!added.ok || added.entryId === null) assert.fail("expected a history entry");
+  store().commit("Rename category", (d) => updateCategory(d, "x", { name: "Y" }));
+  assert.equal(store().discardIfLatest(added.entryId), false);
+  assert.equal(store().categories.at(-1)?.name, "Y");
+  assert.equal(store().history.past.length, 2);
+});
+
+test("discardIfLatest refuses while redo entries exist", () => {
+  const added = store().commit("Add category", (d) => addCategory(d, { id: "x", name: "X", color: "lime" }));
+  if (!added.ok || added.entryId === null) assert.fail("expected a history entry");
+  store().commit("Rename category", (d) => updateCategory(d, "x", { name: "Y" }));
+  store().undo(); // the add is latest again, with the rename waiting in redo
+  assert.equal(store().discardIfLatest(added.entryId), false);
+  assert.equal(store().categories.some((c) => c.id === "x"), true);
+  assert.equal(store().history.future.length, 1);
+});

@@ -1,12 +1,14 @@
 "use client";
 
 import {
+  useImperativeHandle,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
   type ReactNode,
+  type Ref,
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +35,17 @@ function focusBlock(id: string) {
   );
 }
 
+export interface WeekGridHandle {
+  /**
+   * Close the open block editor as if the user clicked away (committing or
+   * auto-deleting an untitled block). Call before changing the view: the
+   * popover itself only closes on the outside click, after the view changed.
+   */
+  closeEditor: () => void;
+}
+
 interface WeekGridProps {
+  ref?: Ref<WeekGridHandle>;
   columns: GridColumn[];
   /** Indexes into `columns` to render: all 7 on desktop, one on mobile. */
   visible: number[];
@@ -48,6 +60,7 @@ interface WeekGridProps {
 }
 
 export function WeekGrid({
+  ref,
   columns,
   visible,
   ops,
@@ -60,7 +73,9 @@ export function WeekGrid({
 }: WeekGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const [editing, setEditing] = useState<{ id: string; title: string } | null>(null);
+  // entryId: the history entry that created this block in this editing session
+  // (null when an existing block was opened).
+  const [editing, setEditing] = useState<{ id: string; title: string; entryId: number | null } | null>(null);
 
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 7 * HOUR_HEIGHT });
@@ -82,22 +97,32 @@ export function WeekGrid({
 
   const openEditor = (id: string) => {
     const found = find(id);
-    if (found) setEditing({ id, title: found.block.title });
+    if (found) setEditing({ id, title: found.block.title, entryId: null });
   };
 
   // The title draft commits on blur or close — one history entry per change.
+  // An empty draft is never committed: closing the editor removes the block
+  // instead, and Undo of that removal should bring back the old title.
   const commitTitle = () => {
     if (!editing) return;
     const found = find(editing.id);
     const title = editing.title.trim();
-    if (found && title !== found.block.title) ops.update(found.col, editing.id, { title }, "Rename block");
+    if (found && title && title !== found.block.title) ops.update(found.col, editing.id, { title }, "Rename block");
   };
 
+  // Closing with an empty title deletes the block. A block created in this
+  // session with nothing changed since vanishes without a trace (no toast,
+  // no undo step); otherwise it is a normal delete with an Undo toast.
   const closeEditor = () => {
     if (!editing) return;
-    commitTitle();
     setEditing(null);
+    const found = find(editing.id);
+    if (!found) return;
+    if (editing.title.trim()) commitTitle();
+    else if (editing.entryId === null || !ops.discard(editing.entryId)) ops.remove(found.col, editing.id);
   };
+
+  useImperativeHandle(ref, () => ({ closeEditor }));
 
   const toggleDone = (col: number, block: GridBlock) => {
     const done = block.status === "done";
@@ -105,8 +130,8 @@ export function WeekGrid({
   };
 
   const createAt = (col: number, start: number, end: number) => {
-    const id = ops.create(visible[col], start, end);
-    if (id) setEditing({ id, title: "" });
+    const created = ops.create(visible[col], start, end);
+    if (created) setEditing({ id: created.id, title: "", entryId: created.entryId });
   };
 
   const { preview, handlers } = useGridDrag({
@@ -182,11 +207,13 @@ export function WeekGrid({
       categories={categories}
       showStatus={showStatus}
       side={single ? "bottom" : "right"}
-      onTitleChange={(title) => setEditing({ id: block.id, title })}
+      onTitleChange={(title) => setEditing((current) => (current ? { ...current, title } : current))}
       onTitleBlur={commitTitle}
       onChange={(patch, label) => ops.update(col, block.id, patch, label)}
       onDuplicate={() => {
-        closeEditor();
+        // Explicit action on this block: keep it even if untitled.
+        commitTitle();
+        setEditing(null);
         ops.duplicate(col, block.id);
       }}
       onDelete={() => {

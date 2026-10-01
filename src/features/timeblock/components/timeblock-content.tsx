@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ChartBar } from "lucide-react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
@@ -36,7 +36,7 @@ import { ApplyTemplateMenu, MoreMenu, TemplatePicker, TemplatesEmpty } from "./t
 import { ApplyTemplateDialog, DeleteTemplateDialog, NameDialog } from "./template-dialogs";
 import { NavIconButton, TimeblockNavbar, WeekNav, type Mode } from "./timeblock-navbar";
 import { useTimeblockShortcuts } from "./use-timeblock-shortcuts";
-import { WeekGrid } from "./week-grid";
+import { WeekGrid, type WeekGridHandle } from "./week-grid";
 
 type TemplateDialog =
   | { kind: "new" }
@@ -69,6 +69,7 @@ export default function TimeblockContent() {
   const [statsOpen, setStatsOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const gridRef = useRef<WeekGridHandle>(null);
 
   const weekStart = addDays(startOfWeek(today, weekStartsOn), weekOffset * 7);
   const dates = useMemo(() => weekDates(weekStart), [weekStart]);
@@ -129,7 +130,11 @@ export default function TimeblockContent() {
   const dayIndex = mobileDay ?? defaultDay;
   const visible = useMemo(() => (isDesktop ? ALL_DAYS : [dayIndex]), [isDesktop, dayIndex]);
 
+  // Every view change closes the block editor first, so an untitled block is
+  // committed or auto-deleted instead of being left behind off-screen.
+  const closeEditor = () => gridRef.current?.closeEditor();
   const switchMode = (next: Mode) => {
+    closeEditor();
     setMode(next);
     setMobileDay(null);
   };
@@ -137,8 +142,16 @@ export default function TimeblockContent() {
     switchMode("week");
     setWeekOffset(0);
   };
-  const stepWeek = (delta: number) => setWeekOffset((offset) => offset + delta);
+  const stepWeek = (delta: number) => {
+    closeEditor();
+    setWeekOffset((offset) => offset + delta);
+  };
+  const selectTemplate = (id: string) => {
+    closeEditor();
+    setTemplateId(id);
+  };
   const stepDay = (delta: 1 | -1) => {
+    closeEditor();
     const next = dayIndex + delta;
     if (next >= 0 && next <= 6) {
       setMobileDay(next);
@@ -216,7 +229,7 @@ export default function TimeblockContent() {
                 <TemplatePicker
                   templates={templates}
                   value={activeTemplateId}
-                  onChange={setTemplateId}
+                  onChange={selectTemplate}
                   onNew={() => setDialog({ kind: "new" })}
                 />
               </div>
@@ -262,6 +275,7 @@ export default function TimeblockContent() {
         <main className="flex min-w-0 flex-1 flex-col">
           {ops ? (
             <WeekGrid
+              ref={gridRef}
               columns={columns}
               visible={visible}
               ops={ops}

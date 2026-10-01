@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { HISTORY_LIMIT, emptyHistory, latestId, record, redo, undo } from "./history.ts";
+import { HISTORY_LIMIT, discardLatest, emptyHistory, latestId, record, redo, undo } from "./history.ts";
 
 test("record pushes an undo point with increasing ids", () => {
   const a = record(emptyHistory<string>(), "First", "v0");
@@ -51,4 +51,34 @@ test("history keeps only the newest entries", () => {
   assert.equal(history.past.length, HISTORY_LIMIT);
   assert.equal(history.past[0].id, 6);
   assert.equal(history.past[0].data, 5);
+});
+
+test("discardLatest drops the newest entry and any redo built on it", () => {
+  // Add block (entry 1), then another edit (entry 2) that gets undone.
+  const added = record(emptyHistory<string>(), "Add block", "before-add");
+  const edited = record(added.history, "Change category", "with-block");
+  const undone = undo(edited.history, "with-block-recolored");
+  assert.ok(undone);
+  assert.equal(latestId(undone.history), added.id);
+  assert.equal(undone.history.future.length, 1);
+
+  const discarded = discardLatest(undone.history);
+  assert.ok(discarded);
+  assert.equal(discarded.data, "before-add");
+  assert.deepEqual(discarded.history.past, []);
+  assert.deepEqual(discarded.history.future, []);
+  assert.equal(discarded.history.nextId, undone.history.nextId);
+});
+
+test("discardLatest on an empty history does nothing", () => {
+  assert.equal(discardLatest(emptyHistory<string>()), null);
+});
+
+test("discardLatest keeps older entries and exposes the previous id", () => {
+  const first = record(emptyHistory<string>(), "Edit", "v0");
+  const second = record(first.history, "Add block", "v1");
+  const discarded = discardLatest(second.history);
+  assert.ok(discarded);
+  assert.deepEqual(discarded.history.past.map((e) => e.label), ["Edit"]);
+  assert.equal(latestId(discarded.history), first.id);
 });

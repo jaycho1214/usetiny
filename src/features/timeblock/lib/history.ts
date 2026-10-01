@@ -66,6 +66,22 @@ export function redo<T>(
   };
 }
 
+/**
+ * Forget the newest change as if it never happened: restore its snapshot
+ * without offering it as a redo. Redo entries are dropped too — their
+ * snapshots were taken on top of the discarded change.
+ */
+export function discardLatest<T>(
+  history: History<T>,
+): { history: History<T>; data: T } | null {
+  const entry = history.past.at(-1);
+  if (!entry) return null;
+  return {
+    data: entry.data,
+    history: { ...history, past: history.past.slice(0, -1), future: [] },
+  };
+}
+
 export function latestId<T>(history: History<T>): number | null {
   return history.past.at(-1)?.id ?? null;
 }

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
+  discardLatest,
   emptyHistory,
   latestId,
   record,
@@ -30,6 +31,12 @@ interface TimeblockState extends TimeblockData {
   redo: () => void;
   /** Undo only if `entryId` is still the latest change (toast "Undo" buttons). */
   undoIfLatest: (entryId: number) => boolean;
+  /**
+   * Erase `entryId` from history if it is still the latest change and nothing
+   * waits in redo — no undo or redo left behind (an abandoned, never-titled
+   * new block). Refuses otherwise, so callers fall back to a normal delete.
+   */
+  discardIfLatest: (entryId: number) => boolean;
   setWeekStartsOn: (weekStartsOn: WeekStartsOn) => void;
   setLastCategoryId: (id: string) => void;
 }
@@ -67,6 +74,13 @@ export const useTimeblockStore = create<TimeblockState>()(
       undoIfLatest: (entryId) => {
         if (latestId(get().history) !== entryId) return false;
         get().undo();
+        return true;
+      },
+      discardIfLatest: (entryId) => {
+        const { history } = get();
+        if (latestId(history) !== entryId || history.future.length > 0) return false;
+        const result = discardLatest(history);
+        if (result) set({ ...result.data, history: result.history });
         return true;
       },
       setWeekStartsOn: (weekStartsOn) => set({ weekStartsOn }),

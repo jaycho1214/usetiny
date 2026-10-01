@@ -46,8 +46,10 @@ export function defaultCategoryId(): string {
 
 // ── Week blocks ────────────────────────────────────────────────────────────
 
-export function addBlock(week: readonly string[], date: string, block: Block): boolean {
-  return run("Add block", (d) => ops.addBlock(d, week, date, block)).ok;
+/** Returns the history entry id of the add, or null when it was refused. */
+export function addBlock(week: readonly string[], date: string, block: Block): number | null {
+  const result = run("Add block", (d) => ops.addBlock(d, week, date, block));
+  return result.ok ? result.entryId : null;
 }
 
 export function updateBlock(date: string, id: string, patch: ops.BlockPatch, label = "Edit block") {
@@ -73,8 +75,10 @@ export function clearWeek(week: readonly string[]) {
 
 // ── Template blocks ────────────────────────────────────────────────────────
 
-export function addTemplateBlock(templateId: string, block: TemplateBlock): boolean {
-  return run("Add block", (d) => ops.addTemplateBlock(d, templateId, block)).ok;
+/** Returns the history entry id of the add, or null when it was refused. */
+export function addTemplateBlock(templateId: string, block: TemplateBlock): number | null {
+  const result = run("Add block", (d) => ops.addTemplateBlock(d, templateId, block));
+  return result.ok ? result.entryId : null;
 }
 
 export function updateTemplateBlock(
@@ -96,6 +100,11 @@ export function deleteTemplateBlock(templateId: string, id: string) {
 
 export function duplicateTemplateBlock(templateId: string, id: string) {
   run("Duplicate block", (d) => ops.duplicateTemplateBlock(d, templateId, id, newId()));
+}
+
+/** Erase a change from history if nothing has happened since (see store.discardIfLatest). */
+export function discardIfLatest(entryId: number): boolean {
+  return store().discardIfLatest(entryId);
 }
 
 // ── Templates ──────────────────────────────────────────────────────────────
