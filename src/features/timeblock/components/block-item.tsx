@@ -36,6 +36,12 @@ export function BlockItem({
 }: BlockItemProps) {
   const minutes = block.end - block.start;
   const compact = minutes < 45;
+  /**
+   * A 15-minute block is 11px tall: two handles would cover it all. Keep a
+   * body to grab (move), resize from a thinner bottom edge only, and leave
+   * out the ✓ button, which would overflow — the solid fill shows done.
+   */
+  const short = minutes < 30;
   const width = 100 / slot.columns;
   const done = showStatus && block.status === "done";
   const skipped = showStatus && block.status === "skipped";
@@ -72,7 +78,9 @@ export function BlockItem({
               dragging && "cursor-grabbing shadow-lg ring-1 ring-foreground/10",
             )}
           >
-            <div data-resize="start" className="absolute inset-x-0 top-0 h-1.5 cursor-ns-resize" />
+            {!short && (
+              <div data-resize="start" className="absolute inset-x-0 top-0 h-1.5 cursor-ns-resize" />
+            )}
             <div
               className={cn(
                 "pr-4",
@@ -98,9 +106,12 @@ export function BlockItem({
                 {compact ? formatMinutes(block.start) : formatTimeRange(block.start, block.end)}
               </span>
             </div>
-            <div data-resize="end" className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize" />
+            <div
+              data-resize="end"
+              className={cn("absolute inset-x-0 bottom-0 cursor-ns-resize", short ? "h-1" : "h-1.5")}
+            />
           </div>
-          {showStatus && (
+          {showStatus && !short && (
             <button
               type="button"
               data-block-action
