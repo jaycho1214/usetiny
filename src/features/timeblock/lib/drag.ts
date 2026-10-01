@@ -1,4 +1,4 @@
-import { slotStart, type Range } from "./range.ts";
+import { resizeFloor, slotStart, type Range } from "./range.ts";
 import { DAY_MINUTES, SLOT_MINUTES, clamp, snap } from "./time.ts";
 
 export type Gesture =
@@ -42,7 +42,8 @@ export function pointToCell(
 
 /**
  * Where the block lands for the current pointer position. Every result stays
- * inside one day and is at least one slot long.
+ * inside one day. Moves step in whole slots from where the block sits, so a
+ * typed 2:50 start stays on :50; resizing snaps the dragged edge to the grid.
  */
 export function resolveGesture(
   gesture: Gesture,
@@ -62,7 +63,7 @@ export function resolveGesture(
     case "move": {
       const duration = gesture.end - gesture.start;
       const start = clamp(
-        snap(cell.minute - gesture.grabOffset),
+        gesture.start + snap(cell.minute - gesture.grabOffset - gesture.start),
         0,
         DAY_MINUTES - duration,
       );
@@ -75,14 +76,14 @@ export function resolveGesture(
     case "resize-start":
       return {
         col: gesture.col,
-        start: clamp(snap(cell.minute), 0, gesture.end - SLOT_MINUTES),
+        start: clamp(snap(cell.minute), 0, gesture.end - resizeFloor(gesture)),
         end: gesture.end,
       };
     case "resize-end":
       return {
         col: gesture.col,
         start: gesture.start,
-        end: clamp(snap(cell.minute), gesture.start + SLOT_MINUTES, DAY_MINUTES),
+        end: clamp(snap(cell.minute), gesture.start + resizeFloor(gesture), DAY_MINUTES),
       };
   }
 }

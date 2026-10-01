@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { LayoutSlot } from "../lib/layout";
-import { formatMinutes, formatTimeRange } from "../lib/time";
+import { DAY_MINUTES, SLOT_MINUTES, formatMinutes, formatTimeRange } from "../lib/time";
 import { readableText, type CategoryLook } from "../palette";
 import type { GridBlock } from "./grid-types";
 import { HOUR_HEIGHT } from "./use-grid-drag";
@@ -60,7 +60,9 @@ export function BlockItem({
               "--c": look.hex,
               color: ink,
               top: (block.start / 60) * HOUR_HEIGHT,
-              height: (minutes / 60) * HOUR_HEIGHT - 1,
+              // Typed times can make a block shorter than a slot; draw it a slot tall to keep it
+              // grabbable, but never past midnight.
+              height: (Math.min(Math.max(minutes, SLOT_MINUTES), DAY_MINUTES - block.start) / 60) * HOUR_HEIGHT - 1,
               left: `calc(${slot.column * width}% + 2px)`,
               width: `calc(${width}% - 4px)`,
             } as CSSProperties

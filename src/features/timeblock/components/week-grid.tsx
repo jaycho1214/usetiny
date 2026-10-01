@@ -353,7 +353,7 @@ function DayColumn({
   onBlockKeyDown,
   onToggleDone,
 }: DayColumnProps) {
-  const layout = useMemo(() => layoutDay(column.blocks), [column.blocks]);
+  const layout = useMemo(() => layoutDay(column.blocks, SLOT_MINUTES), [column.blocks]);
   const previewHere = preview !== null && preview.col === visibleIndex;
 
   const item = (block: GridBlock, slot: LayoutSlot, isDragging: boolean) => (

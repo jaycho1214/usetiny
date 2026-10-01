@@ -13,13 +13,17 @@ interface Span {
  * Side-by-side layout for overlapping blocks in one day (Google Calendar
  * style). Transitively overlapping blocks form a cluster; each block takes the
  * first column whose previous block has ended, and every block in a cluster
- * shares the cluster's column count.
+ * shares the cluster's column count. A block shorter than `minSpan` is drawn
+ * that tall, so it is laid out as if it were that long.
  */
-export function layoutDay(blocks: readonly Span[]): Map<string, LayoutSlot> {
+export function layoutDay(
+  blocks: readonly Span[],
+  minSpan = 0,
+): Map<string, LayoutSlot> {
   const result = new Map<string, LayoutSlot>();
-  const sorted = [...blocks].sort(
-    (a, b) => a.start - b.start || b.end - a.end,
-  );
+  const sorted = blocks
+    .map((b) => ({ ...b, end: Math.max(b.end, b.start + minSpan) }))
+    .sort((a, b) => a.start - b.start || b.end - a.end);
   let cluster: { id: string; column: number }[] = [];
   let columnEnds: number[] = [];
   let clusterEnd = -1;

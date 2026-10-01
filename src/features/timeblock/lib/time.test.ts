@@ -13,9 +13,11 @@ import {
   formatWeekRange,
   formatWeekday,
   isoWeekday,
+  parseTimeValue,
   snap,
   startOfWeek,
   toDateKey,
+  toTimeValue,
   weekDates,
   weekdayLabel,
   weekdayOrder,
@@ -30,6 +32,22 @@ test("snap rounds to the nearest 15 minutes", () => {
   assert.equal(snap(22), 15);
   assert.equal(snap(23), 30);
   assert.equal(snap(-20), -15);
+});
+
+test("toTimeValue formats minutes for a time input; midnight wraps to 00:00", () => {
+  assert.equal(toTimeValue(0), "00:00");
+  assert.equal(toTimeValue(170), "02:50");
+  assert.equal(toTimeValue(1439), "23:59");
+  assert.equal(toTimeValue(1440), "00:00");
+});
+
+test("parseTimeValue reads a time input's value, seconds ignored", () => {
+  assert.equal(parseTimeValue("02:50"), 170);
+  assert.equal(parseTimeValue("23:59"), 1439);
+  assert.equal(parseTimeValue("14:47:30"), 887);
+  assert.equal(parseTimeValue(""), null);
+  assert.equal(parseTimeValue("24:00"), null);
+  assert.equal(parseTimeValue("9:5"), null);
 });
 
 test("toDateKey pads month and day", () => {
@@ -107,9 +125,10 @@ test("date formatters", () => {
   );
 });
 
-test("formatDuration shows hours", () => {
+test("formatDuration shows hours and minutes", () => {
   assert.equal(formatDuration(0), "0h");
-  assert.equal(formatDuration(90), "1.5h");
-  assert.equal(formatDuration(75), "1.25h");
+  assert.equal(formatDuration(45), "45m");
+  assert.equal(formatDuration(90), "1h 30m");
+  assert.equal(formatDuration(130), "2h 10m");
   assert.equal(formatDuration(600), "10h");
 });

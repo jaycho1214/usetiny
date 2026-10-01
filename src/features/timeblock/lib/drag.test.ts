@@ -41,3 +41,20 @@ test("resizing keeps at least one slot and stays inside the day", () => {
   assert.deepEqual(resolveGesture({ kind: "resize-start", ...box }, { col: 1, minute: 630 }, 7), { col: 1, start: 585, end: 600 });
   assert.deepEqual(resolveGesture({ kind: "resize-start", ...box }, { col: 1, minute: -50 }, 7), { col: 1, start: 0, end: 600 });
 });
+
+test("move steps a block in whole slots, so an off-grid start stays off-grid", () => {
+  const g = { kind: "move" as const, col: 0, start: 170, end: 220, grabOffset: 10 };
+  // 2:50 → 3:05, not 3:00.
+  assert.deepEqual(resolveGesture(g, { col: 0, minute: 200 }, 7), { col: 0, start: 185, end: 235 });
+  // A small wiggle past the drag threshold doesn't nudge it onto the grid.
+  assert.deepEqual(resolveGesture(g, { col: 0, minute: 184 }, 7), { col: 0, start: 170, end: 220 });
+});
+
+test("resizing snaps the dragged edge and never stretches a short block", () => {
+  const offGrid = { col: 0, start: 170, end: 230 };
+  assert.deepEqual(resolveGesture({ kind: "resize-end", ...offGrid }, { col: 0, minute: 248 }, 7), { col: 0, start: 170, end: 255 });
+  const short = { col: 0, start: 170, end: 180 };
+  assert.deepEqual(resolveGesture({ kind: "resize-end", ...short }, { col: 0, minute: 100 }, 7), { col: 0, start: 170, end: 180 });
+  assert.deepEqual(resolveGesture({ kind: "resize-start", ...short }, { col: 0, minute: 300 }, 7), { col: 0, start: 170, end: 180 });
+  assert.deepEqual(resolveGesture({ kind: "resize-start", ...short }, { col: 0, minute: 160 }, 7), { col: 0, start: 165, end: 180 });
+});

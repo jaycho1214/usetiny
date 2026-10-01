@@ -1,6 +1,9 @@
 import type { Weekday, WeekStartsOn } from "../types.ts";
 
+/** Drag, resize and arrow keys step by one slot; typed times can be any minute. */
 export const SLOT_MINUTES = 15;
+/** The shortest block a typed time can make. */
+export const MIN_BLOCK_MINUTES = 5;
 export const DAY_MINUTES = 24 * 60;
 
 export function clamp(value: number, min: number, max: number): number {
@@ -13,6 +16,21 @@ export function snap(minutes: number): number {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
+
+/** 170 → "02:50", the value format of `<input type="time">`. 1440 wraps to "00:00". */
+export function toTimeValue(minutes: number): string {
+  const m = minutes % DAY_MINUTES;
+  return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
+}
+
+/** "02:50" → 170. Seconds are ignored; anything else (including "") is null. */
+export function parseTimeValue(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})(?::\d{2}(?:\.\d+)?)?$/.exec(value);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  return hours < 24 && minutes < 60 ? hours * 60 + minutes : null;
+}
 
 /** Local calendar date as "YYYY-MM-DD". */
 export function toDateKey(date: Date): string {
@@ -120,7 +138,10 @@ export function formatWeekRange(
   }).formatRange(fromDateKey(dates[0]), fromDateKey(dates[dates.length - 1]));
 }
 
-/** Minutes as hours: 0 → "0h", 90 → "1.5h", 75 → "1.25h". */
+/** 0 → "0h", 45 → "45m", 130 → "2h 10m", 600 → "10h". */
 export function formatDuration(minutes: number): string {
-  return `${Math.round((minutes / 60) * 100) / 100}h`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (m === 0) return `${h}h`;
+  return h === 0 ? `${m}m` : `${h}h ${m}m`;
 }

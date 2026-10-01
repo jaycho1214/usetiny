@@ -33,3 +33,11 @@ test("three mutually overlapping blocks get three columns, longest first", () =>
   assert.deepEqual(slots.get("b"), { column: 1, columns: 3 });
   assert.deepEqual(slots.get("c"), { column: 2, columns: 3 });
 });
+
+test("a block shorter than minSpan is laid out as if it were minSpan long", () => {
+  const blocks = [span("a", 540, 550), span("b", 550, 600)];
+  assert.deepEqual(layoutDay(blocks).get("b"), { column: 0, columns: 1 });
+  const slots = layoutDay(blocks, 15);
+  assert.deepEqual(slots.get("a"), { column: 0, columns: 2 });
+  assert.deepEqual(slots.get("b"), { column: 1, columns: 2 });
+});

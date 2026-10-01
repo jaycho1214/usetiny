@@ -1,27 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import { PopoverContent } from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { withStart } from "../lib/range";
-import { DAY_MINUTES, SLOT_MINUTES, formatMinutes } from "../lib/time";
+import { withEnd, withStart } from "../lib/range";
+import { DAY_MINUTES, parseTimeValue, toTimeValue } from "../lib/time";
 import { PALETTE } from "../palette";
 import type { BlockStatus, Category } from "../types";
 import type { GridBlock, GridPatch } from "./grid-types";
-
-/** 0, 15, … 1440 */
-const SLOTS = Array.from({ length: DAY_MINUTES / SLOT_MINUTES + 1 }, (_, i) => i * SLOT_MINUTES);
-const START_OPTIONS = SLOTS.slice(0, -1);
 
 const STATUSES: { value: BlockStatus; label: string; historyLabel: string }[] = [
   { value: "planned", label: "Planned", historyLabel: "Mark planned" },
@@ -71,6 +61,8 @@ export function BlockPopover({
       collisionPadding={12}
       className="w-72 space-y-4"
       onCloseAutoFocus={onCloseAutoFocus}
+      onInteractOutside={saveFocusedField}
+      onEscapeKeyDown={saveFocusedField}
     >
       <Input
         value={title}
@@ -112,18 +104,24 @@ export function BlockPopover({
       <section className="space-y-1.5">
         <h3 className={SECTION_LABEL}>Time</h3>
         <div className="flex items-center gap-2">
-          <TimeSelect
+          <TimeField
             label="Start time"
-            value={block.start}
-            options={START_OPTIONS}
-            onChange={(start) => onChange(withStart(block, start), "Change time")}
+            value={toTimeValue(block.start)}
+            onCommit={(value) => {
+              const start = parseTimeValue(value);
+              if (start !== null) onChange(withStart(block, start), "Change time");
+            }}
           />
           <span className="text-muted-foreground">–</span>
-          <TimeSelect
+          <TimeField
             label="End time"
-            value={block.end}
-            options={SLOTS.filter((m) => m > block.start)}
-            onChange={(end) => onChange({ end }, "Change time")}
+            value={toTimeValue(block.end)}
+            onCommit={(value) => {
+              const end = parseTimeValue(value);
+              // An end is always after the start, so 12:00 AM can only mean midnight.
+              const range = end === null ? null : withEnd(block, end === 0 ? DAY_MINUTES : end);
+              if (range) onChange(range, "Change time");
+            }}
           />
         </div>
       </section>
@@ -163,26 +161,56 @@ export function BlockPopover({
   );
 }
 
-interface TimeSelectProps {
-  label: string;
-  value: number;
-  options: number[];
-  onChange: (minutes: number) => void;
+/**
+ * Clicking the grid doesn't move focus (it prevents default to stop text
+ * selection), so a field being edited would never blur and its typed value
+ * would be lost when the editor closes. Blur it first so it saves itself.
+ */
+function saveFocusedField() {
+  const field = document.activeElement;
+  if (field instanceof HTMLInputElement && field.closest("[data-slot=popover-content]")) field.blur();
 }
 
-function TimeSelect({ label, value, options, onChange }: TimeSelectProps) {
+interface TimeFieldProps {
+  label: string;
+  /** "HH:MM" */
+  value: string;
+  /** The typed value, on Enter or blur. Invalid values are the caller's to ignore. */
+  onCommit: (value: string) => void;
+}
+
+/**
+ * A time input that commits on Enter or blur instead of on every segment the
+ * browser fills in, so typing "2:50" is one undo step. Afterwards the field
+ * shows the block's actual time, whether the edit was taken, adjusted or
+ * ignored.
+ */
+function TimeField({ label, value, onCommit }: TimeFieldProps) {
+  const [draft, setDraft] = useState(value);
+  const [shown, setShown] = useState(value);
+  if (value !== shown) {
+    setShown(value);
+    setDraft(value);
+  }
+  const commit = () => {
+    if (draft !== value) onCommit(draft);
+    setDraft(value);
+  };
   return (
-    <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
-      <SelectTrigger size="sm" className="flex-1" aria-label={label}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent className="max-h-64">
-        {options.map((m) => (
-          <SelectItem key={m} value={String(m)}>
-            {m === DAY_MINUTES ? "Midnight" : formatMinutes(m)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Input
+      type="time"
+      step={60}
+      value={draft}
+      aria-label={label}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          commit();
+        }
+      }}
+      className="h-8 min-w-0 flex-1 appearance-none tabular-nums [&::-webkit-calendar-picker-indicator]:hidden"
+    />
   );
 }
