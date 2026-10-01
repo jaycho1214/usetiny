@@ -142,7 +142,7 @@ Each route has an `opengraph-image.tsx` that generates a 1200×630 PNG via Next.
 - **Long names** (≥ 9 chars per word): stack vertically with one word per line (e.g. `Word` / `Counter`); render second word in `#71717a` for hierarchy.
 - Each image still has a **distinct composition** — the inline visual element should differ tool-to-tool.
 
-**Tool accent colors**: Notepad `#f59e0b` · Rich Text `#a78bfa` · QR `#a855f7` · Spreadsheet `#10b981` · Markdown `#ec4899` · Image `#f97316` · Word Counter `#3b82f6` · YouTube Looper `#ef4444` · Webhook Inspector `#06b6d4` · PDF Editor `#f43f5e`.
+**Tool accent colors**: Notepad `#f59e0b` · Rich Text `#a78bfa` · QR `#a855f7` · Spreadsheet `#10b981` · Markdown `#ec4899` · Image `#f97316` · Word Counter `#3b82f6` · YouTube Looper `#ef4444` · Webhook Inspector `#06b6d4` · PDF Editor `#f43f5e` · Timeblock `#84cc16`.
 
 **Satori constraints** — the renderer does NOT support:
 
