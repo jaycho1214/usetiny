@@ -8,6 +8,8 @@ let timer: ReturnType<typeof setInterval> | null = null;
 function subscribe(fn: () => void): () => void {
   listeners.add(fn);
   if (timer === null) {
+    // The clock stopped with the last subscriber; don't serve its old time.
+    now = Date.now();
     timer = setInterval(() => {
       now = Date.now();
       for (const l of listeners) l();
