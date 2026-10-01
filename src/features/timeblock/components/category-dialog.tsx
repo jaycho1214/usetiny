@@ -40,8 +40,7 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
         </DialogHeader>
         <div className="-mx-1 max-h-[50vh] space-y-1.5 overflow-y-auto px-1 py-0.5">
           {categories.map((c) => (
-            // Keyed by name too, so an undo or rename resets the field.
-            <CategoryRow key={`${c.id}:${c.name}`} category={c} canDelete={categories.length > 1} />
+            <CategoryRow key={c.id} category={c} canDelete={categories.length > 1} />
           ))}
         </div>
         <Button
@@ -59,10 +58,13 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
 }
 
 function CategoryRow({ category, canDelete }: { category: Category; canDelete: boolean }) {
-  const [name, setName] = useState(category.name);
+  // Only an edit in progress lives here; otherwise the field shows the stored
+  // name, so undo/redo show up without remounting the row (a remount would
+  // swallow a click on this row's buttons right after a rename).
+  const [draft, setDraft] = useState<string | null>(null);
   const commitName = () => {
-    if (name.trim()) actions.updateCategory(category.id, { name }, "Rename category");
-    else setName(category.name);
+    if (draft?.trim()) actions.updateCategory(category.id, { name: draft }, "Rename category");
+    setDraft(null);
   };
   return (
     <div className="flex items-center gap-2">
@@ -86,11 +88,11 @@ function CategoryRow({ category, canDelete }: { category: Category; canDelete: b
         </DropdownMenuContent>
       </DropdownMenu>
       <Input
-        value={name}
+        value={draft ?? category.name}
         maxLength={40}
         aria-label="Category name"
         className="h-8"
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => setDraft(e.target.value)}
         onBlur={commitName}
         onKeyDown={(e) => {
           if (e.key === "Enter") e.currentTarget.blur();
