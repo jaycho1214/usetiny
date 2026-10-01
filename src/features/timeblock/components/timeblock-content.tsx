@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChartBar } from "lucide-react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useIsMac } from "@/hooks/use-is-mac";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useNow } from "@/hooks/use-now";
@@ -11,6 +13,7 @@ import { computeStats } from "../lib/stats";
 import {
   addDays,
   formatDuration,
+  formatMonthDay,
   formatWeekRange,
   formatWeekday,
   fromDateKey,
@@ -19,10 +22,12 @@ import {
   weekDates,
 } from "../lib/time";
 import { useTimeblockStore } from "../store";
+import { CategoryDialog } from "./category-dialog";
 import { createWeekOps } from "./grid-ops";
 import type { GridColumn } from "./grid-types";
 import { timeblockShortcutSections } from "./shortcuts";
-import { TimeblockNavbar, WeekNav, type Mode } from "./timeblock-navbar";
+import { StatsPanel } from "./stats-panel";
+import { NavIconButton, TimeblockNavbar, WeekNav, type Mode } from "./timeblock-navbar";
 import { useTimeblockShortcuts } from "./use-timeblock-shortcuts";
 import { WeekGrid } from "./week-grid";
 
@@ -44,6 +49,8 @@ export default function TimeblockContent() {
   const [mode, setMode] = useState<Mode>("week");
   const [weekOffset, setWeekOffset] = useState(0);
   const [mobileDay, setMobileDay] = useState<number | null>(null);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
 
   const weekStart = addDays(startOfWeek(today, weekStartsOn), weekOffset * 7);
@@ -89,6 +96,10 @@ export default function TimeblockContent() {
     stepWeek(delta); // wrap into the neighboring week
     setMobileDay((next + 7) % 7);
   };
+  const openCategories = () => {
+    setStatsOpen(false);
+    setCategoriesOpen(true);
+  };
 
   useTimeblockShortcuts({
     onToday: goToday,
@@ -104,6 +115,16 @@ export default function TimeblockContent() {
   });
 
   if (!hydrated) return <FullscreenLoading />;
+
+  const panel = (
+    <StatsPanel
+      heading={weekOffset === 0 ? "This week" : `Week of ${formatMonthDay(dates[0])}`}
+      stats={stats}
+      categories={categories}
+      showStatus
+      onManageCategories={openCategories}
+    />
+  );
 
   return (
     <div className="flex h-dvh flex-col">
@@ -121,7 +142,11 @@ export default function TimeblockContent() {
             />
           ) : null
         }
-        actions={null}
+        actions={
+          <NavIconButton label="Stats" onClick={() => setStatsOpen(true)} className="md:hidden">
+            <ChartBar className="h-3.5 w-3.5" />
+          </NavIconButton>
+        }
         undoLabel={history.past.at(-1)?.label}
         redoLabel={history.future.at(-1)?.label}
         onUndo={undo}
@@ -145,6 +170,7 @@ export default function TimeblockContent() {
             />
           )}
         </main>
+        <aside className="hidden w-64 shrink-0 border-l md:block">{panel}</aside>
       </div>
       <div className="flex items-center gap-3 border-t bg-background px-4 py-1.5 text-xs text-muted-foreground">
         <span className="tabular-nums">
@@ -154,6 +180,14 @@ export default function TimeblockContent() {
         <span className="flex-1" />
         <span className="opacity-60">Saved</span>
       </div>
+
+      <Sheet open={statsOpen} onOpenChange={setStatsOpen}>
+        <SheetContent side="right" className="w-72 gap-0 p-0 sm:max-w-72">
+          <SheetTitle className="sr-only">Stats</SheetTitle>
+          {panel}
+        </SheetContent>
+      </Sheet>
+      <CategoryDialog open={categoriesOpen} onOpenChange={setCategoriesOpen} />
       <ShortcutsDialog
         open={showShortcuts}
         onOpenChange={setShowShortcuts}
