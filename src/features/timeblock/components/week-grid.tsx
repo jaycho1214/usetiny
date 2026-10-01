@@ -82,12 +82,17 @@ export function WeekGrid({
     if (found) setEditing({ id, title: found.block.title });
   };
 
-  // The title draft commits once, on close — one history entry per edit.
-  const closeEditor = () => {
+  // The title draft commits on blur or close — one history entry per change.
+  const commitTitle = () => {
     if (!editing) return;
     const found = find(editing.id);
     const title = editing.title.trim();
     if (found && title !== found.block.title) ops.update(found.col, editing.id, { title }, "Rename block");
+  };
+
+  const closeEditor = () => {
+    if (!editing) return;
+    commitTitle();
     setEditing(null);
   };
 
@@ -175,6 +180,7 @@ export function WeekGrid({
       showStatus={showStatus}
       side={single ? "bottom" : "right"}
       onTitleChange={(title) => setEditing({ id: block.id, title })}
+      onTitleBlur={commitTitle}
       onChange={(patch, label) => ops.update(col, block.id, patch, label)}
       onDuplicate={() => {
         closeEditor();
@@ -273,7 +279,7 @@ export function WeekGrid({
               categories={categories}
               showStatus={showStatus}
               now={now}
-              editingId={editing?.id ?? null}
+              editingId={editorOpen ? editing.id : null}
               renderEditor={renderEditor}
               onEditorClose={closeEditor}
               onBlockKeyDown={onBlockKeyDown}

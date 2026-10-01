@@ -33,13 +33,15 @@ const SECTION_LABEL = "text-xs uppercase tracking-wider text-muted-foreground";
 
 interface BlockPopoverProps {
   block: GridBlock;
-  /** Draft title, owned by the grid and committed when the editor closes. */
+  /** Draft title, owned by the grid and committed on blur or close. */
   title: string;
   categories: Category[];
   showStatus: boolean;
   /** "bottom" in the single-day view, where a block spans the screen width. */
   side?: "right" | "bottom";
   onTitleChange: (title: string) => void;
+  /** Commit the title draft without closing. */
+  onTitleBlur: () => void;
   onChange: (patch: GridPatch, label: string) => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -55,6 +57,7 @@ export function BlockPopover({
   showStatus,
   side = "right",
   onTitleChange,
+  onTitleBlur,
   onChange,
   onDuplicate,
   onDelete,
@@ -75,6 +78,7 @@ export function BlockPopover({
         aria-label="Block title"
         maxLength={120}
         onChange={(e) => onTitleChange(e.target.value)}
+        onBlur={onTitleBlur}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
