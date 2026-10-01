@@ -76,6 +76,9 @@ export function WeekGrid({
 
   const editorOpen =
     editing !== null && visible.some((i) => columns[i].blocks.some((b) => b.id === editing.id));
+  // Its block is gone (e.g. the add was undone): drop the editor, so a redo
+  // can't bring it back with a stale draft.
+  if (editing !== null && !editorOpen) setEditing(null);
 
   const openEditor = (id: string) => {
     const found = find(id);
