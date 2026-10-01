@@ -32,6 +32,7 @@ export const metadata: Metadata = {
     url: "https://usetiny.app/timeblock",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Timeblock Planner | UseTiny",
     description: SHARE_DESCRIPTION,
   },
