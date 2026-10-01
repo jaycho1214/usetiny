@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PALETTE, PALETTE_KEYS, categoryLook, nextColor } from "./palette.ts";
+import { PALETTE, PALETTE_KEYS, categoryLook, nextColor, readableText } from "./palette.ts";
 import { UNCATEGORIZED_ID, type Category } from "./types.ts";
 
 const cat = (id: string, color: Category["color"]): Category => ({ id, name: id, color });
@@ -19,4 +19,13 @@ test("categoryLook resolves known and deleted categories", () => {
   const categories = [cat("deep", "blue")];
   assert.deepEqual(categoryLook(categories, "deep"), { id: "deep", name: "deep", hex: PALETTE.blue });
   assert.deepEqual(categoryLook(categories, "gone"), { id: UNCATEGORIZED_ID, name: "Uncategorized", hex: "#a1a1aa" });
+});
+
+test("readableText picks the higher-contrast text color for a solid fill", () => {
+  assert.equal(readableText(PALETTE.amber), "#0a0a0a");
+  assert.equal(readableText(PALETTE.lime), "#0a0a0a");
+  assert.equal(readableText(PALETTE.blue), "#0a0a0a");
+  assert.equal(readableText(PALETTE.slate), "#ffffff");
+  assert.equal(readableText("#000000"), "#ffffff");
+  assert.equal(readableText("#ffffff"), "#0a0a0a");
 });

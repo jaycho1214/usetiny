@@ -24,10 +24,9 @@ export default function Image() {
             alignSelf: "flex-start",
             alignItems: "center",
             gap: 18,
-            padding: "16px 24px 16px 20px",
-            borderRadius: 14,
-            borderLeft: `8px solid ${ACCENT}`,
-            backgroundColor: "rgba(132, 204, 22, 0.14)",
+            padding: "16px 24px",
+            border: "2px solid rgba(132, 204, 22, 0.55)",
+            backgroundColor: "rgba(132, 204, 22, 0.16)",
           }}
         >
           <div

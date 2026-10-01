@@ -6,7 +6,7 @@ import { Popover, PopoverAnchor } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import type { LayoutSlot } from "../lib/layout";
 import { formatMinutes, formatTimeRange } from "../lib/time";
-import type { CategoryLook } from "../palette";
+import { readableText, type CategoryLook } from "../palette";
 import type { GridBlock } from "./grid-types";
 import { HOUR_HEIGHT } from "./use-grid-drag";
 
@@ -46,6 +46,8 @@ export function BlockItem({
   const done = showStatus && block.status === "done";
   const skipped = showStatus && block.status === "skipped";
   const title = block.title || "Untitled";
+  // Status reads as fill weight: skipped = hollow, planned = tint, done = solid.
+  const ink = done ? readableText(look.hex) : undefined;
 
   return (
     <Popover open={editor !== null} onOpenChange={(open) => !open && onEditorClose()}>
@@ -56,6 +58,7 @@ export function BlockItem({
           style={
             {
               "--c": look.hex,
+              color: ink,
               top: (block.start / 60) * HOUR_HEIGHT,
               height: (minutes / 60) * HOUR_HEIGHT - 1,
               left: `calc(${slot.column * width}% + 2px)`,
@@ -70,11 +73,12 @@ export function BlockItem({
             onKeyDown={onKeyDown}
             aria-label={`${title}, ${look.name}, ${formatTimeRange(block.start, block.end)}${showStatus ? `, ${block.status}` : ""}`}
             className={cn(
-              "h-full cursor-grab select-none overflow-hidden rounded-md border-l-[3px] border-[var(--c)] px-1.5 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring",
+              "h-full cursor-grab select-none overflow-hidden px-1.5 outline-1 -outline-offset-1 transition-shadow focus-visible:ring-2 focus-visible:ring-ring",
               done
-                ? "bg-[color-mix(in_oklab,var(--c)_42%,var(--background))]"
-                : "bg-[color-mix(in_oklab,var(--c)_16%,var(--background))]",
-              skipped && "border-dashed opacity-55",
+                ? "outline-transparent bg-[var(--c)]"
+                : skipped
+                  ? "outline-dashed outline-[color-mix(in_oklab,var(--c)_60%,transparent)] bg-background text-muted-foreground"
+                  : "outline-solid outline-[color-mix(in_oklab,var(--c)_45%,transparent)] bg-[color-mix(in_oklab,var(--c)_18%,var(--background))]",
               dragging && "cursor-grabbing shadow-lg ring-1 ring-foreground/10",
             )}
           >
@@ -90,8 +94,9 @@ export function BlockItem({
               <span
                 className={cn(
                   "min-w-0 truncate font-medium",
-                  !compact && "block",
-                  !block.title && "text-muted-foreground",
+                  // Compact rows share one line: the title keeps its width, the time gives way.
+                  compact ? "max-w-full shrink-0" : "block",
+                  !block.title && (done ? "opacity-70" : "text-muted-foreground"),
                   skipped && "line-through",
                 )}
               >
@@ -99,7 +104,8 @@ export function BlockItem({
               </span>
               <span
                 className={cn(
-                  "shrink-0 truncate tabular-nums text-muted-foreground",
+                  "min-w-0 truncate tabular-nums",
+                  done ? "opacity-75" : "text-muted-foreground",
                   !compact && "block text-[10px]",
                 )}
               >
@@ -118,10 +124,10 @@ export function BlockItem({
               aria-label={done ? "Mark as planned" : "Mark as done"}
               onClick={onToggleDone}
               className={cn(
-                "absolute right-1 top-1 flex size-3.5 items-center justify-center rounded-full border border-[var(--c)] transition-opacity focus-visible:opacity-100",
+                "absolute right-1 top-1 flex size-3.5 items-center justify-center border transition-opacity focus-visible:opacity-100",
                 done
-                  ? "bg-[var(--c)] text-white"
-                  : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto",
+                  ? "border-current"
+                  : "pointer-events-none border-[var(--c)] bg-background text-transparent opacity-0 hover:text-[var(--c)] group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto",
               )}
             >
               <Check className="size-2.5" strokeWidth={3} />

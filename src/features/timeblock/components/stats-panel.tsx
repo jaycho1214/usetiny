@@ -32,9 +32,9 @@ export function StatsPanel({ heading, stats, categories, showStatus, onManageCat
               <span className="text-3xl font-bold tabular-nums tracking-tight">{formatDuration(stats.done)}</span>
               <span className="text-sm text-muted-foreground">done of {formatDuration(stats.planned)}</span>
             </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="mt-3 h-1.5 overflow-hidden bg-muted">
               <div
-                className="h-full rounded-full bg-foreground transition-[width] duration-300"
+                className="h-full bg-foreground transition-[width] duration-300"
                 style={{ width: `${percent}%` }}
               />
             </div>
@@ -85,7 +85,7 @@ export function StatsPanel({ heading, stats, categories, showStatus, onManageCat
 function CategoryBar({ totals, total, showStatus }: { totals: Totals; total: number; showStatus: boolean }) {
   const pct = (minutes: number, of: number) => `${of > 0 ? (minutes / of) * 100 : 0}%`;
   return (
-    <div className="mt-1.5 flex h-1.5 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--c)_20%,transparent)]">
+    <div className="mt-1.5 flex h-1.5 overflow-hidden bg-[color-mix(in_oklab,var(--c)_20%,transparent)]">
       {showStatus ? (
         <>
           <div className="h-full bg-[var(--c)]" style={{ width: pct(totals.done, totals.planned) }} />

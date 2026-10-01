@@ -386,7 +386,7 @@ function DayColumn({
 function DraftBlock({ start, end }: { start: number; end: number }) {
   return (
     <div
-      className="pointer-events-none absolute inset-x-0.5 z-20 rounded-md border border-dashed border-foreground/40 bg-foreground/5 px-1.5 pt-0.5 text-[10px] tabular-nums text-muted-foreground"
+      className="pointer-events-none absolute inset-x-0.5 z-20 border border-dashed border-foreground/40 bg-foreground/5 px-1.5 pt-0.5 text-[10px] tabular-nums text-muted-foreground"
       style={{ top: (start / 60) * HOUR_HEIGHT, height: ((end - start) / 60) * HOUR_HEIGHT - 1 }}
     >
       {formatTimeRange(start, end)}

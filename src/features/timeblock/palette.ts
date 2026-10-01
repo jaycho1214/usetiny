@@ -44,3 +44,23 @@ export function categoryLook(
     ? { id: category.id, name: category.name, hex: PALETTE[category.color] }
     : { id: UNCATEGORIZED_ID, name: "Uncategorized", hex: UNCATEGORIZED_HEX };
 }
+
+const DARK_TEXT = "#0a0a0a";
+const LIGHT_TEXT = "#ffffff";
+
+/** WCAG relative luminance of a "#rrggbb" color. */
+function luminance(hex: string): number {
+  const channel = (offset: number) => {
+    const c = parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+}
+
+/** Text color with the higher WCAG contrast on a solid `hex` fill. */
+export function readableText(hex: string): typeof DARK_TEXT | typeof LIGHT_TEXT {
+  const fill = luminance(hex) + 0.05;
+  const lightTextContrast = (luminance(LIGHT_TEXT) + 0.05) / fill;
+  const darkTextContrast = fill / (luminance(DARK_TEXT) + 0.05);
+  return lightTextContrast > darkTextContrast ? LIGHT_TEXT : DARK_TEXT;
+}
