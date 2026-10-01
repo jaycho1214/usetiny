@@ -169,6 +169,16 @@ export default function TimeblockContent() {
   if (!hydrated) return <FullscreenLoading />;
 
   const weekLabel = formatWeekRange(dates);
+  const applyMenu = (
+    <ApplyTemplateMenu
+      templates={templates}
+      onApply={(template) => setDialog({ kind: "apply", template })}
+      onCreate={() => {
+        switchMode("templates");
+        setDialog({ kind: "new" });
+      }}
+    />
+  );
   const panel = (
     <StatsPanel
       heading={
@@ -191,35 +201,38 @@ export default function TimeblockContent() {
         mode={mode}
         onModeChange={switchMode}
         center={
-          mode === "week" ? (
-            <WeekNav
-              label={weekLabel}
-              isCurrentWeek={weekOffset === 0}
-              onPrev={() => stepWeek(-1)}
-              onNext={() => stepWeek(1)}
-              onToday={goToday}
-            />
-          ) : (
-            <TemplatePicker
-              templates={templates}
-              value={activeTemplateId}
-              onChange={setTemplateId}
-              onNew={() => setDialog({ kind: "new" })}
-            />
-          )
+          <>
+            {mode === "week" ? (
+              <WeekNav
+                label={weekLabel}
+                isCurrentWeek={weekOffset === 0}
+                onPrev={() => stepWeek(-1)}
+                onNext={() => stepWeek(1)}
+                onToday={goToday}
+              />
+            ) : (
+              // min-w-0 lets a long template name truncate instead of pushing Stats off-screen.
+              <div className="min-w-0 flex-1 md:flex-none">
+                <TemplatePicker
+                  templates={templates}
+                  value={activeTemplateId}
+                  onChange={setTemplateId}
+                  onNew={() => setDialog({ kind: "new" })}
+                />
+              </div>
+            )}
+            {/* Below md, Apply and Stats share the second row so row 1 never wraps. */}
+            <div className="ml-auto flex shrink-0 items-center gap-1 pl-1 md:hidden">
+              {mode === "week" && applyMenu}
+              <NavIconButton label="Stats" onClick={() => setStatsOpen(true)}>
+                <ChartBar className="h-3.5 w-3.5" />
+              </NavIconButton>
+            </div>
+          </>
         }
         actions={
           <>
-            {mode === "week" && (
-              <ApplyTemplateMenu
-                templates={templates}
-                onApply={(template) => setDialog({ kind: "apply", template })}
-                onCreate={() => {
-                  switchMode("templates");
-                  setDialog({ kind: "new" });
-                }}
-              />
-            )}
+            {mode === "week" && <div className="hidden md:flex">{applyMenu}</div>}
             <MoreMenu
               mode={mode}
               weekHasBlocks={weekHasBlocks}
@@ -236,9 +249,6 @@ export default function TimeblockContent() {
               }}
               onWeekStartsOnChange={setWeekStartsOn}
             />
-            <NavIconButton label="Stats" onClick={() => setStatsOpen(true)} className="md:hidden">
-              <ChartBar className="h-3.5 w-3.5" />
-            </NavIconButton>
           </>
         }
         undoLabel={history.past.at(-1)?.label}
