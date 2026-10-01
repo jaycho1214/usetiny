@@ -1,4 +1,5 @@
 import {
+  CalendarClock,
   FileDown,
   FileText,
   ImageDown,
@@ -91,5 +92,12 @@ export const allTools: Tool[] = [
     icon: Pilcrow,
     href: "/rich-text",
     addedAt: "2026-05-11",
+  },
+  {
+    name: "Timeblock",
+    description: "Plan your week in time blocks and track what got done",
+    icon: CalendarClock,
+    href: "/timeblock",
+    addedAt: "2026-09-30",
   },
 ];

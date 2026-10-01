@@ -4,7 +4,7 @@ import { Inbox } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { EMPTY_REQUESTS, useWebhookInspectorStore } from "../store";
-import { useNow } from "./use-now";
+import { useNow } from "@/hooks/use-now";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "text-emerald-600 dark:text-emerald-400",
