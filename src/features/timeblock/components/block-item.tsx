@@ -119,7 +119,9 @@ export function BlockItem({
               onClick={onToggleDone}
               className={cn(
                 "absolute right-1 top-1 flex size-3.5 items-center justify-center rounded-full border border-[var(--c)] transition-opacity focus-visible:opacity-100",
-                done ? "bg-[var(--c)] text-white" : "opacity-0 group-hover:opacity-100",
+                done
+                  ? "bg-[var(--c)] text-white"
+                  : "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 focus-visible:pointer-events-auto",
               )}
             >
               <Check className="size-2.5" strokeWidth={3} />
