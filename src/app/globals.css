@@ -122,6 +122,12 @@
   }
 }
 
+/* A modal dialog sets pointer-events: none on body; keep toasts (and their
+   Undo buttons) clickable while one is open. */
+[data-sonner-toaster] {
+  pointer-events: auto;
+}
+
 /* Mermaid diagrams in the Markdown preview */
 .md-preview [data-mermaid-src] {
   display: flex;

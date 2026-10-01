@@ -33,7 +33,13 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
   const categories = useTimeblockStore((s) => s.categories);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => {
+          // Clicking a toast (e.g. "Category deleted" → Undo) keeps the dialog open.
+          if (e.target instanceof Element && e.target.closest("[data-sonner-toaster]")) e.preventDefault();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Categories</DialogTitle>
           <DialogDescription>Blocks in a deleted category show as Uncategorized.</DialogDescription>
