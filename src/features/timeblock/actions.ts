@@ -29,9 +29,16 @@ function toastWithUndo(message: string, result: ActionResult) {
     action: {
       label: "Undo",
       onClick: () => {
-        if (!store().undoIfLatest(entryId)) {
-          toast("You've made changes since — use Undo in the toolbar instead.");
-        }
+        // Wait for this click to finish: an open block editor closes on it only
+        // after this handler, and may first discard an abandoned new block.
+        setTimeout(() => {
+          const { history, undoIfLatest } = store();
+          // Already undone (⌘Z or the toolbar) — nothing left to do.
+          if (history.future.some((entry) => entry.id === entryId)) return;
+          if (!undoIfLatest(entryId)) {
+            toast("You've made changes since — use Undo in the toolbar instead.");
+          }
+        }, 0);
       },
     },
   });

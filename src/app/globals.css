@@ -122,9 +122,10 @@
   }
 }
 
-/* A modal dialog sets pointer-events: none on body; keep toasts (and their
-   Undo buttons) clickable while one is open. */
-[data-sonner-toaster] {
+/* A modal dialog sets pointer-events: none on body, so toasts are click-through
+   while one is open. A dialog whose changes come with Undo toasts opts back in
+   with data-toasts-clickable (it must ignore outside clicks on the toaster). */
+body:has([data-toasts-clickable][data-state="open"]) [data-sonner-toaster] {
   pointer-events: auto;
 }
 

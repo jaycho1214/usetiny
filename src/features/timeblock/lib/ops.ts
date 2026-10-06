@@ -248,6 +248,9 @@ export function saveWeekAsTemplate(
       weekday: isoWeekday(date),
     })),
   );
+  // The week limit counts the week on screen; after a week-start switch the
+  // same dates can hold more, and a template that big could never be applied.
+  if (blocks.length > LIMITS.blocksPerWeek) return templateFull();
   return createTemplate(data, {
     id: templateId,
     name: name.trim() || "Untitled template",

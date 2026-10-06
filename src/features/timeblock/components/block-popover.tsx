@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -54,14 +54,30 @@ export function BlockPopover({
   onClose,
   onCloseAutoFocus,
 }: BlockPopoverProps) {
+  // Set when the editor closes because the user clicked or tabbed elsewhere:
+  // focus then stays where they put it instead of jumping back to the block.
+  const leftOutside = useRef(false);
   return (
     <PopoverContent
       side={side}
       align="start"
       collisionPadding={12}
       className="w-72 space-y-4"
-      onCloseAutoFocus={onCloseAutoFocus}
-      onInteractOutside={saveFocusedField}
+      onCloseAutoFocus={(e) => {
+        if (leftOutside.current) e.preventDefault();
+        else onCloseAutoFocus(e);
+      }}
+      onInteractOutside={(e) => {
+        // A press on this block itself (a double-click on a new block, a grab,
+        // its ✓) isn't leaving it: keep the editor open.
+        const target = e.target instanceof Element ? e.target.closest("[data-block-id]") : null;
+        if (target?.getAttribute("data-block-id") === block.id) {
+          e.preventDefault();
+          return;
+        }
+        leftOutside.current = true;
+        saveFocusedField();
+      }}
       onEscapeKeyDown={saveFocusedField}
     >
       <Input

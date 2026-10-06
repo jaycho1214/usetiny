@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChartBar } from "lucide-react";
 import { FullscreenLoading } from "@/components/fullscreen-loading";
 import { ShortcutsDialog } from "@/components/shortcuts-dialog";
@@ -26,7 +26,7 @@ import {
   weekdayOrder,
 } from "../lib/time";
 import { useTimeblockStore } from "../store";
-import type { Template } from "../types";
+import type { Template, Weekday } from "../types";
 import { CategoryDialog } from "./category-dialog";
 import { createTemplateOps, createWeekOps } from "./grid-ops";
 import type { GridColumn } from "./grid-types";
@@ -62,16 +62,25 @@ export default function TimeblockContent() {
   const today = toDateKey(new Date(now));
 
   const [mode, setMode] = useState<Mode>("week");
-  const [weekOffset, setWeekOffset] = useState(0);
+  // The day Week mode shows: its week on desktop, the day itself in the
+  // single-day view. A date, not an offset from today, so the clock passing
+  // midnight or a week boundary never moves the view (or a block's open editor).
+  const [focusDay, setFocusDay] = useState<string | null>(null);
+  // Templates mode's single-day view, as an ISO weekday so it survives a
+  // week-start change.
+  const [templateDay, setTemplateDay] = useState<Weekday | null>(null);
   const [templateId, setTemplateId] = useState<string | null>(null);
-  const [mobileDay, setMobileDay] = useState<number | null>(null);
   const [dialog, setDialog] = useState<TemplateDialog>(null);
   const [statsOpen, setStatsOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const gridRef = useRef<WeekGridHandle>(null);
 
-  const weekStart = addDays(startOfWeek(today, weekStartsOn), weekOffset * 7);
+  // Pin the view to today once the page is ready; only navigation moves it.
+  if (hydrated && focusDay === null) setFocusDay(today);
+  const day = focusDay ?? today;
+  const weekStart = startOfWeek(day, weekStartsOn);
+  const isCurrentWeek = weekStart === startOfWeek(today, weekStartsOn);
   const dates = useMemo(() => weekDates(weekStart), [weekStart]);
   const weekdays = useMemo(() => weekdayOrder(weekStartsOn), [weekStartsOn]);
   const activeTemplate = templates.find((t) => t.id === templateId) ?? templates[0] ?? null;
@@ -125,26 +134,32 @@ export default function TimeblockContent() {
   );
   const weekHasBlocks = weekColumns.some((c) => c.blocks.length > 0);
 
-  const defaultDay =
-    mode === "week" ? Math.max(dates.indexOf(today), 0) : weekdays.indexOf(isoWeekday(today));
-  const dayIndex = mobileDay ?? defaultDay;
+  const dayIndex =
+    mode === "week" ? dates.indexOf(day) : weekdays.indexOf(templateDay ?? isoWeekday(day));
   const visible = useMemo(() => (isDesktop ? ALL_DAYS : [dayIndex]), [isDesktop, dayIndex]);
+  // What "Today" would change: the week on desktop, the day in the single-day view.
+  const showingToday = isDesktop ? isCurrentWeek : day === today;
 
   // Every view change closes the block editor first, so an untitled block is
   // committed or auto-deleted instead of being left behind off-screen.
   const closeEditor = () => gridRef.current?.closeEditor();
+  // The view can also change under the user (rotating a phone, resizing past
+  // the single-day breakpoint); close the editor if that took its block off-screen.
+  useEffect(() => {
+    gridRef.current?.closeHiddenEditor();
+  }, [visible]);
   const switchMode = (next: Mode) => {
     closeEditor();
     setMode(next);
-    setMobileDay(null);
+    setTemplateDay(null);
   };
   const goToday = () => {
     switchMode("week");
-    setWeekOffset(0);
+    setFocusDay(today);
   };
   const stepWeek = (delta: number) => {
     closeEditor();
-    setWeekOffset((offset) => offset + delta);
+    setFocusDay(addDays(day, delta * 7));
   };
   const selectTemplate = (id: string) => {
     closeEditor();
@@ -152,13 +167,8 @@ export default function TimeblockContent() {
   };
   const stepDay = (delta: 1 | -1) => {
     closeEditor();
-    const next = dayIndex + delta;
-    if (next >= 0 && next <= 6) {
-      setMobileDay(next);
-      return;
-    }
-    if (mode === "week") stepWeek(delta); // wrap into the neighboring week
-    setMobileDay((next + 7) % 7);
+    if (mode === "week") setFocusDay(addDays(day, delta)); // wraps into the neighboring week
+    else setTemplateDay(weekdays[(dayIndex + delta + 7) % 7]);
   };
   const openCategories = () => {
     setStatsOpen(false);
@@ -196,7 +206,7 @@ export default function TimeblockContent() {
     <StatsPanel
       heading={
         mode === "week"
-          ? weekOffset === 0
+          ? isCurrentWeek
             ? "This week"
             : `Week of ${formatMonthDay(dates[0])}`
           : (activeTemplate?.name ?? "Template")
@@ -218,7 +228,7 @@ export default function TimeblockContent() {
             {mode === "week" ? (
               <WeekNav
                 label={weekLabel}
-                isCurrentWeek={weekOffset === 0}
+                showingToday={showingToday}
                 onPrev={() => stepWeek(-1)}
                 onNext={() => stepWeek(1)}
                 onToday={goToday}

@@ -138,6 +138,12 @@ test("saveWeekAsTemplate records ISO weekdays and drops status", () => {
   ]);
 });
 
+test("saveWeekAsTemplate refuses a week over the template limit", () => {
+  const many = Array.from({ length: LIMITS.blocksPerWeek + 1 }, (_, i) => block(`b${i}`, 0, 15));
+  const result = saveWeekAsTemplate(withBlocks({ [MON]: many }), WEEK, "t1", "Big", counter());
+  assert.ok(isOpError(result));
+});
+
 test("createTemplate refuses the 21st template", () => {
   const data: TimeblockData = {
     ...initialData(),

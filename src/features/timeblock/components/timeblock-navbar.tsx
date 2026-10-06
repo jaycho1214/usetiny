@@ -148,13 +148,14 @@ export function NavIconButton({
 
 interface WeekNavProps {
   label: string;
-  isCurrentWeek: boolean;
+  /** Already on today (this week, or today's column in the single-day view): Today is disabled. */
+  showingToday: boolean;
   onPrev: () => void;
   onNext: () => void;
   onToday: () => void;
 }
 
-export function WeekNav({ label, isCurrentWeek, onPrev, onNext, onToday }: WeekNavProps) {
+export function WeekNav({ label, showingToday, onPrev, onNext, onToday }: WeekNavProps) {
   return (
     <>
       <Button size="icon" variant="ghost" className="h-7 w-7" aria-label="Previous week" onClick={onPrev}>
@@ -173,7 +174,7 @@ export function WeekNav({ label, isCurrentWeek, onPrev, onNext, onToday }: WeekN
         size="sm"
         variant="outline"
         className="ml-1 h-7 px-2.5 text-xs"
-        disabled={isCurrentWeek}
+        disabled={showingToday}
         onClick={onToday}
       >
         Today

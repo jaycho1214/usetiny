@@ -21,8 +21,11 @@ function isEditable(target: EventTarget | null): boolean {
   );
 }
 
-/** Popover/dialog content, where focus sits on the editor's own controls. */
-const LAYER = "[role=dialog],[role=alertdialog],[role=menu],[role=listbox]";
+/**
+ * Popover/dialog content, where focus sits on the editor's own controls, and
+ * select triggers (the template picker), where a letter key is typeahead.
+ */
+const LAYER = "[role=dialog],[role=alertdialog],[role=menu],[role=listbox],[role=combobox]";
 /** Menus and listboxes, where a letter key is typeahead. */
 const MENU = "[role=menu],[role=listbox]";
 

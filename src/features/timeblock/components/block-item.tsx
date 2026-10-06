@@ -18,6 +18,8 @@ interface BlockItemProps {
   dragging: boolean;
   /** Popover content while this block's editor is open, else null. */
   editor: ReactNode;
+  /** Open the editor from a click without a pointer press (screen readers, element.click()). */
+  onActivate: () => void;
   onEditorClose: () => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
   onToggleDone: () => void;
@@ -30,6 +32,7 @@ export function BlockItem({
   showStatus,
   dragging,
   editor,
+  onActivate,
   onEditorClose,
   onKeyDown,
   onToggleDone,
@@ -54,6 +57,9 @@ export function BlockItem({
       <PopoverAnchor asChild>
         <div
           data-block-id={block.id}
+          // While this block's editor is open, a press on the block keeps focus
+          // in the editor (the editor also stays open; see BlockPopover).
+          onPointerDown={editor !== null ? (e) => e.preventDefault() : undefined}
           className={cn("group absolute", dragging && "z-20")}
           style={
             {
@@ -73,6 +79,11 @@ export function BlockItem({
             role="button"
             tabIndex={0}
             onKeyDown={onKeyDown}
+            onClick={(e) => {
+              // Pointer presses are handled by the grid. Screen readers in
+              // Firefox and Safari activate with a bare click instead.
+              if (e.detail === 0 || (e.nativeEvent as PointerEvent).pointerType === "") onActivate();
+            }}
             aria-label={`${title}, ${look.name}, ${formatTimeRange(block.start, block.end)}${showStatus ? `, ${block.status}` : ""}`}
             className={cn(
               "h-full cursor-grab select-none overflow-hidden px-1.5 outline-1 -outline-offset-1 transition-shadow focus-visible:ring-2 focus-visible:ring-ring",

@@ -35,6 +35,8 @@ export function CategoryDialog({ open, onOpenChange }: CategoryDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-md"
+        // Keeps the "Category deleted" toast's Undo clickable (see globals.css).
+        data-toasts-clickable
         onInteractOutside={(e) => {
           // Clicking a toast (e.g. "Category deleted" → Undo) keeps the dialog open.
           if (e.target instanceof Element && e.target.closest("[data-sonner-toaster]")) e.preventDefault();

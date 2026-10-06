@@ -98,6 +98,6 @@ export const allTools: Tool[] = [
     description: "Plan your week in time blocks and track what got done",
     icon: CalendarClock,
     href: "/timeblock",
-    addedAt: "2026-09-30",
+    addedAt: "2026-10-06",
   },
 ];

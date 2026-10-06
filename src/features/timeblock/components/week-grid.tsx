@@ -27,12 +27,14 @@ import { HOUR_HEIGHT, useGridDrag, type DragPreview } from "./use-grid-drag";
 const HOURS = Array.from({ length: 23 }, (_, i) => i + 1);
 const FULL_WIDTH: LayoutSlot = { column: 0, columns: 1 };
 
-function focusBlock(id: string) {
-  requestAnimationFrame(() =>
+function focusBlock(id: string, { unlessEditing = false } = {}) {
+  requestAnimationFrame(() => {
+    // An editor that opened meanwhile (another block's) keeps the focus.
+    if (unlessEditing && document.querySelector("[data-slot=popover-content]")) return;
     document
       .querySelector<HTMLElement>(`[data-block-id="${id}"] [data-block-focus]`)
-      ?.focus({ preventScroll: true }),
-  );
+      ?.focus({ preventScroll: true });
+  });
 }
 
 export interface WeekGridHandle {
@@ -42,6 +44,12 @@ export interface WeekGridHandle {
    * popover itself only closes on the outside click, after the view changed.
    */
   closeEditor: () => void;
+  /**
+   * The same, but only if the edited block is no longer on screen — for view
+   * changes nobody navigated to (rotating the phone, resizing past the
+   * single-day breakpoint).
+   */
+  closeHiddenEditor: () => void;
 }
 
 interface WeekGridProps {
@@ -73,9 +81,19 @@ export function WeekGrid({
 }: WeekGridProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const lastScrollAt = useRef(0);
+  // title: the typed draft, or null while there is none. The field then shows
+  // the stored title, so an undo or redo made with the editor open shows up
+  // there, and an old draft can't re-commit over it or turn it into a delete.
   // entryId: the history entry that created this block in this editing session
   // (null when an existing block was opened).
-  const [editing, setEditing] = useState<{ id: string; title: string; entryId: number | null } | null>(null);
+  // view: the visible columns the last time the editor was on screen.
+  const [editing, setEditing] = useState<{
+    id: string;
+    title: string | null;
+    entryId: number | null;
+    view: string;
+  } | null>(null);
 
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 7 * HOUR_HEIGHT });
@@ -89,25 +107,49 @@ export function WeekGrid({
     return null;
   };
 
+  const view = visible.join();
   const editorOpen =
     editing !== null && visible.some((i) => columns[i].blocks.some((b) => b.id === editing.id));
-  // Its block is gone (e.g. the add was undone): drop the editor, so a redo
-  // can't bring it back with a stale draft.
-  if (editing !== null && !editorOpen) setEditing(null);
+  if (editing !== null) {
+    if (!find(editing.id)) {
+      // Its block is gone (e.g. the add was undone): drop the editor, so a
+      // redo can't bring it back with a stale draft.
+      setEditing(null);
+    } else if (editorOpen) {
+      if (editing.view !== view) setEditing({ ...editing, view });
+    } else if (editing.view === view) {
+      // Same view, block moved off it (an undo or redo): just drop the editor.
+      // Closing would delete an untitled block and wipe the redo stack.
+      setEditing(null);
+    }
+    // Otherwise the view changed under the editor (rotation, resizing past
+    // the breakpoint): it waits for closeHiddenEditor to commit or auto-delete.
+  }
 
   const openEditor = (id: string) => {
-    const found = find(id);
-    if (found) setEditing({ id, title: found.block.title, entryId: null });
+    if (editing?.id === id) return; // already open (Enter on the block itself)
+    if (find(id)) setEditing({ id, title: null, entryId: null, view });
+  };
+
+  // A screen reader's activation (a click with no pointer press behind it):
+  // open this block, closing another block's editor the usual way first.
+  const activateBlock = (id: string) => {
+    if (editing?.id === id) return;
+    closeEditor();
+    openEditor(id);
   };
 
   // The title draft commits on blur or close — one history entry per change.
   // An empty draft is never committed: closing the editor removes the block
   // instead, and Undo of that removal should bring back the old title.
   const commitTitle = () => {
-    if (!editing) return;
+    if (!editing || editing.title === null) return;
     const found = find(editing.id);
     const title = editing.title.trim();
-    if (found && title && title !== found.block.title) ops.update(found.col, editing.id, { title }, "Rename block");
+    if (!found || !title) return; // an empty draft stays, so closing deletes the block
+    if (title !== found.block.title) ops.update(found.col, editing.id, { title }, "Rename block");
+    const { id } = editing;
+    setEditing((current) => (current?.id === id ? { ...current, title: null } : current));
   };
 
   // Closing with an empty title deletes the block. A block created in this
@@ -118,11 +160,16 @@ export function WeekGrid({
     setEditing(null);
     const found = find(editing.id);
     if (!found) return;
-    if (editing.title.trim()) commitTitle();
+    if ((editing.title ?? found.block.title).trim()) commitTitle();
     else if (editing.entryId === null || !ops.discard(editing.entryId)) ops.remove(found.col, editing.id);
   };
 
-  useImperativeHandle(ref, () => ({ closeEditor }));
+  useImperativeHandle(ref, () => ({
+    closeEditor,
+    closeHiddenEditor: () => {
+      if (editing !== null && !editorOpen) closeEditor();
+    },
+  }));
 
   const toggleDone = (col: number, block: GridBlock) => {
     const done = block.status === "done";
@@ -131,13 +178,17 @@ export function WeekGrid({
 
   const createAt = (col: number, start: number, end: number) => {
     const created = ops.create(visible[col], start, end);
-    if (created) setEditing({ id: created.id, title: "", entryId: created.entryId });
+    if (created) setEditing({ id: created.id, title: null, entryId: created.entryId, view });
   };
 
   const { preview, handlers } = useGridDrag({
     bodyRef,
     columns: visible.length,
-    isBusy: () => editorOpen,
+    // A non-modal menu (⋯, Apply template) closes on the press without
+    // stopping it, so that press must not also draw or open a block.
+    isBusy: () => editorOpen || document.querySelector('[role="menu"][data-state="open"]') !== null,
+    // Scroll events arrive every frame while a fling coasts.
+    isScrolling: () => performance.now() - lastScrollAt.current < 100,
     locate: (id) => {
       const found = find(id);
       const col = found ? visible.indexOf(found.col) : -1;
@@ -179,6 +230,8 @@ export function WeekGrid({
         const to = col + (e.key === "ArrowLeft" ? -1 : 1);
         if (to < 0 || to >= columns.length) break;
         ops.move(col, block.id, to, block.start, block.end);
+        // The single-day view follows the block to its new day.
+        if (visible.length === 1) (e.key === "ArrowLeft" ? onPrevDay : onNextDay)?.();
         focusBlock(block.id);
         break;
       }
@@ -207,7 +260,10 @@ export function WeekGrid({
       categories={categories}
       showStatus={showStatus}
       side={single ? "bottom" : "right"}
-      onTitleChange={(title) => setEditing((current) => (current ? { ...current, title } : current))}
+      onTitleChange={(title) =>
+        // Typing back to the stored title leaves no draft.
+        setEditing((current) => (current ? { ...current, title: title === block.title ? null : title } : current))
+      }
       onTitleBlur={commitTitle}
       onChange={(patch, label) => ops.update(col, block.id, patch, label)}
       onDuplicate={() => {
@@ -223,7 +279,7 @@ export function WeekGrid({
       onClose={closeEditor}
       onCloseAutoFocus={(e) => {
         e.preventDefault();
-        focusBlock(block.id);
+        focusBlock(block.id, { unlessEditing: true });
       }}
     />
   );
@@ -231,7 +287,13 @@ export function WeekGrid({
   const dragged = preview?.blockId ? (find(preview.blockId)?.block ?? null) : null;
 
   return (
-    <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+    <div
+      ref={scrollRef}
+      className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      onScroll={() => {
+        lastScrollAt.current = performance.now();
+      }}
+    >
       <div className="sticky top-0 z-30 flex border-b bg-background">
         <div className="w-14 shrink-0" />
         {visible.map((i) => {
@@ -311,6 +373,7 @@ export function WeekGrid({
               now={now}
               editingId={editorOpen ? editing.id : null}
               renderEditor={renderEditor}
+              onActivate={activateBlock}
               onEditorClose={closeEditor}
               onBlockKeyDown={onBlockKeyDown}
               onToggleDone={toggleDone}
@@ -333,6 +396,7 @@ interface DayColumnProps {
   now: number;
   editingId: string | null;
   renderEditor: (col: number, block: GridBlock) => ReactNode;
+  onActivate: (id: string) => void;
   onEditorClose: () => void;
   onBlockKeyDown: (e: KeyboardEvent<HTMLDivElement>, col: number, block: GridBlock) => void;
   onToggleDone: (col: number, block: GridBlock) => void;
@@ -349,6 +413,7 @@ function DayColumn({
   now,
   editingId,
   renderEditor,
+  onActivate,
   onEditorClose,
   onBlockKeyDown,
   onToggleDone,
@@ -365,6 +430,7 @@ function DayColumn({
       showStatus={showStatus}
       dragging={isDragging}
       editor={!isDragging && editingId === block.id ? renderEditor(col, block) : null}
+      onActivate={() => onActivate(block.id)}
       onEditorClose={onEditorClose}
       onKeyDown={(e) => onBlockKeyDown(e, col, block)}
       onToggleDone={() => onToggleDone(col, block)}

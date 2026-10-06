@@ -39,8 +39,13 @@ interface GridDragOptions {
   columns: number;
   /** Visible column and range of a rendered block. */
   locate: (blockId: string) => Placement | null;
-  /** While true (an editor is open) a press only dismisses it. */
+  /** While true (an editor or a menu is open) a press only dismisses it. */
   isBusy: () => boolean;
+  /**
+   * True while the grid is still scrolling. A touch then stops a fling, and
+   * Android still reports it as a tap (with no click), so it is ignored.
+   */
+  isScrolling: () => boolean;
   onDraw: (placement: Placement) => void;
   onDrop: (blockId: string, fromCol: number, placement: Placement, kind: Gesture["kind"]) => void;
   onTapEmpty: (cell: Cell) => void;
@@ -64,6 +69,7 @@ export function useGridDrag(options: GridDragOptions) {
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.button !== 0 || options.isBusy()) return;
+    if (e.pointerType === "touch" && options.isScrolling()) return;
     const target = e.target as HTMLElement;
     if (target.closest("[data-block-action]")) return;
     const cell = cellAt(e);
